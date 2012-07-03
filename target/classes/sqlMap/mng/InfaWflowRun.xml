@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="InfaWflowRun">
+	<typeAlias alias="InfaWflowRun"
+		type="cn.com.liandisys.infa.entity.mng.InfaWflowRun" />
+	<typeAlias alias="Informatica"
+		type="cn.com.liandisys.infa.entity.sys.Informatica" />
+
+
+
+	<resultMap class="InfaWflowRun" id="InfaWflowRunResult">
+		<result property="id" column="ID" />
+		<result property="subjectId" column="SUBJECT_ID" />
+		<result property="workflowId" column="WORKFLOW_ID" />
+		<result property="workflowRunId" column="WORKFLOW_RUN_ID" />
+		<result property="workflowName" column="WORKFLOW_NAME" />
+		<result property="serverId" column="SERVER_ID" />
+		<result property="serverName" column="SERVER_NAME" />
+		<result property="startTime" column="START_TIME" />
+		<result property="endTime" column="END_TIME" />
+		<result property="logFile" column="LOG_FILE" />
+		<result property="runErrCode" column="RUN_ERR_CODE" />
+		<result property="runErrMsg" column="RUN_ERR_MSG" />
+		<result property="runStatusCode" column="RUN_STATUS_CODE" />
+		<result property="userName" column="USER_NAME" />
+		<result property="runType" column="RUN_TYPE" />
+		<result property="versionNumber" column="VERSION_NUMBER" />
+		<result property="subjectArea" column="SUBJECT_AREA" />
+		<result property="infomaticId" column="INFOMATIC_ID" />
+		<result property="logDetail" column="LOG_DETAIL" />
+		<result property="taskRunId" column="TASK_RUN_ID" />
+	</resultMap>
+	<!-- 全表检索用字段 -->
+	<sql id="segment_selProps">
+		SUBJECT_ID
+		,WORKFLOW_ID
+		,WORKFLOW_RUN_ID
+		,WORKFLOW_NAME
+		,SERVER_ID
+		,SERVER_NAME
+		,START_TIME
+		,END_TIME
+		,LOG_FILE
+		,RUN_ERR_CODE
+		,RUN_ERR_MSG
+		,RUN_STATUS_CODE
+		,USER_NAME
+		,RUN_TYPE
+		,VERSION_NUMBER
+		,SUBJECT_AREA
+	</sql>
+	<!-- 查询平台InfaWflowRun -->
+	<select id="selectInfaWflowRunByCond" resultMap="InfaWflowRunResult" resultClass="InfaWflowRun"
+		parameterClass="java.util.Map">
+		SELECT
+		ID
+		,INFOMATIC_ID
+		,LOG_DETAIL
+		,TASK_RUN_ID,
+		<include refid="segment_selProps" />
+		FROM INFA_WFLOW_RUN
+		where RUN_STATUS_CODE is null
+		<isNotNull property="stopcodelist">
+			OR RUN_STATUS_CODE is not in
+			<iterate property="stopcodelist" conjunction="," close=")"
+				open="(">
+				#STOPCODELIST#
+			</iterate>
+		</isNotNull>
+	</select>
+
+	<!-- 查询IFNA InfaWflowRun -->
+	<select id="selectRepWflowRunByCond" resultMap="InfaWflowRunResult">
+		SELECT
+		<include refid="segment_selProps" />
+		FROM REP_WFLOW_RUN
+		WHERE WORKFLOW_ID IN ({0})
+		AND WORKFLOW_RUN_ID IN ({1})
+		AND LOG_FILE IS NOT NULL
+	</select>
+
+
+	<!--查询infa_wflow_run表的数据 -->
+	<select id="findwflowByLog" parameterClass="InfaWflowRun"  resultMap="InfaWflowRunResult"
+		resultClass="InfaWflowRun">
+		SELECT *
+		FROM INFA_WFLOW_RUN
+		WHERE
+		LOG_FILE IS NOT NULL
+		AND
+		LOG_DETAIL IS NULL
+	</select>
+
+	<!--查询infa_informatic表的数据 -->
+	<select id="findinfoById" parameterClass="java.lang.Long"
+		resultClass="java.lang.String">
+		SELECT WRLOGPATH
+		FROM INFA_INFOMATIC
+		WHERE
+		ID = #id#
+	</select>
+
+	<!-- 更新infa_wflow_run表的LogDetail -->
+	<update id="refreshWkLogDetail" parameterClass="InfaWflowRun">
+		UPDATE
+		INFA_WFLOW_RUN
+		SET
+		LOG_DETAIL = #logDetail:VARCHAR#
+		WHERE
+		ID = #id#
+	</update>
+
+	
+	<!-- 插入infa_wflow_run -->
+	<insert id="insertToWFlowRun" parameterClass="InfaWflowRun">
+		INSERT INTO INFA_WFLOW_RUN (
+		INFOMATIC_ID
+		,TASK_RUN_ID,
+		<include refid="segment_selProps"/>
+		) VALUES (
+			#infomaticId:NUMBER#
+			,#taskRunId:NUMBER#
+			,#subjectId:NUMBER#
+			,#workflowId:NUMBER#
+			,#workflowRunId:NUMBER#
+			,#workflowName:VARCHAR#
+			,#serverId:NUMBER#
+			,#serverName:VARCHAR#
+			,#startTime:Date#
+			,#endTime:Date#
+			,#logFile:VARCHAR#
+			,#runErrCode:NUMBER#
+			,#runErrMsg:VARCHAR#
+			,#runStatusCode:NUMBER#
+			,#userName:VARCHAR#
+			,#runType:NUMBER#
+			,#versionNumber:NUMBER#
+			,#subjectArea:VARCHAR#
+		)
+	</insert>
+
+</sqlMap>

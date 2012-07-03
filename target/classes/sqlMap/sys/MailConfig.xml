@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="mail">
+	<typeAlias alias="Mail"
+		type="cn.com.liandisys.infa.entity.sys.MailConfig" />
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			 SELECT *
+			 FROM INFA_MAIL  
+			 WHERE	
+			 LOGICALNAME IS NOT NULL	
+			 	]]>
+		<isNotNull prepend="AND " property="name">
+        <![CDATA[ LOGICALNAME like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+	   </isNotNull>
+		ORDER BY ID DESC
+	</sql>
+	
+	
+	<sql id="findAll_segment">
+	<![CDATA[
+			 SELECT *
+			 FROM INFA_MAIL  
+			ORDER BY ID DESC 
+	]]>	
+	</sql>
+	
+	<select id="findALL" parameterClass="java.util.HashMap"
+		resultClass="Mail">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findAll_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+	
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Mail">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="mailsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_MAIL
+		WHERE	
+	    LOGICALNAME IS NOT NULL	
+		<isNotNull prepend="AND " property="name">
+             LOGICALNAME like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+		</isNotNull>
+	
+	</select> 
+
+	<!--初始化任务列表 -->
+	<select id="findAllMail" parameterClass="java.lang.String"
+		resultClass="Mail">
+		SELECT *
+		FROM INFA_MAIL
+	</select>
+	
+	<select id="mailCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_MAIL
+	</select>
+    
+	<!-- 根据任务ID查询 -->
+    <select id="findByid" parameterClass="Mail" resultClass="Mail">
+            SELECT
+              		  *
+            FROM
+                   INFA_MAIL
+            WHERE
+                   ID = #id#
+    </select>
+    
+	
+	<!--插入邮件配置数据 -->
+	<insert id="insertMail" parameterClass="Mail">
+       INSERT INTO INFA_MAIL(
+            HOST,
+            PORT,
+            LOGICALNAME,
+            USERNAME,
+            PASSWORD
+        )VALUES(
+              #HOST:VARCHAR#,
+              #PORT:VARCHAR#,
+              #LOGICALNAME:VARCHAR#,
+              #USERNAME:VARCHAR#,
+              #PASSWORD:VARCHAR#
+          )
+     
+     </insert>
+     
+     <!--编辑邮件配置数据-->
+     <update id="updateMail" parameterClass="Mail">
+		   	UPDATE INFA_MAIL 
+		   	SET
+			   	HOST = #HOST:VARCHAR#,
+			   	PORT = #PORT:VARCHAR#,
+			   	LOGICALNAME = #LOGICALNAME:VARCHAR#,
+			   	USERNAME = #USERNAME:VARCHAR#,
+			   	PASSWORD = #PASSWORD:VARCHAR#
+		   	WHERE 
+		   		ID = #id#
+     </update>
+     
+     <!--删除邮件配置数据-->
+     <delete id="deleteMail" parameterClass="Mail">
+     	DELETE
+     	FROM INFA_MAIL
+     	WHERE
+			ID = #id#
+     </delete>
+
+     <!--task新增查询Email-->
+     <select id="findSearhEmail" parameterClass="Mail" resultClass="Mail">
+			SELECT ID,LOGICALNAME,HOST,PORT
+            FROM INFA_MAIL    
+            <dynamic prepend="WHERE">
+			 <isNotNull prepend="AND " property="LOGICALNAME">
+            LOGICALNAME like '%'||#LOGICALNAME#||'%' ESCAPE '\'
+			 </isNotNull>
+		   </dynamic>  
+		   ORDER BY ID DESC
+     </select>
+
+</sqlMap>    

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="index">
+	<typeAlias alias="Task" type="cn.com.liandisys.infa.entity.job.Task" />
+	<typeAlias alias="TaskDetail"
+		type="cn.com.liandisys.infa.entity.job.TaskDetail" />
+	<typeAlias alias="TaskPlans" type="cn.com.liandisys.infa.entity.job.TaskPlans" />
+	<typeAlias alias="TaskLogTime"
+		type="cn.com.liandisys.infa.entity.index.TaskLogTime" />
+	<!--查询所有任务 -->
+	<select id="findAllTaskLog" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+     	<![CDATA[
+		    SELECT 
+		    	COUNT(*) 
+		    FROM 
+		    	INFA_TASKLOG 
+	    	WHERE 
+	    		to_char(START_TIME,'yyyy/mm/dd') <= #datetime# 
+    		AND 
+    			(
+    				to_char(END_TIME,'yyyy/mm/dd') >= #datetime#
+    			OR
+    				END_TIME is null
+    			)
+     	]]>
+	</select>
+	
+	<!--查询所有主任务log下的workflow -->
+	<select id="findAllTaskLog_wflow" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+
+		select COUNT(*) from infa_tasklog a Inner join
+		infa_task_detail b on
+		a.task_id = b.task_id where b.workflowid is not
+		null and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	
+	<select id="findAllTaskLog_wflow2" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_tasklog a Inner join
+		infa_task_detail b on
+		a.task_id = b.task_id where b.TASK_ID  is not
+		null and to_char(START_TIME,'yyyy/mm/dd') = #datetime#  
+	</select>
+	
+	<!--查询子任务log下所有任务 -->
+	<select id="findAllSbuTaskLog_wflow" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_subtasklog a Inner join
+		infa_task_detail b on
+		a.task_id = b.task_id and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	
+	<!--查询成功的workflow -->
+	<select id="findwflowSucceeded" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_wflow_run where RUN_STATUS_CODE = 1 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	<select id="findwflowSucceeded2" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select count(*) from infa_tasklog where RUN_STATUS_CODE = 1 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+		<!-- select COUNT(*) from infa_wflow_run where RUN_STATUS_CODE = 1 and to_char(START_TIME,'yyyy/mm/dd') = #datetime#  -->
+	</select>	
+
+	<!--查询运行中的workflow -->
+	<select id="findwflowRuning" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_wflow_run where RUN_STATUS_CODE = 6 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	<select id="findwflowRuning2" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_tasklog where RUN_STATUS_CODE = 6 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	
+	<!--查询失败的workflow -->
+	<select id="findwflowFailed" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_wflow_run where RUN_STATUS_CODE = 3 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+	<!--查询失败的workflow -->
+	<select id="findwflowFailed2" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		select COUNT(*) from infa_tasklog where RUN_STATUS_CODE = 3 and to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+
+	<!--初始化线段图数据 -->
+	<!--获取当天所有Wrokflow的时间 -->
+	<select id="findalltime" parameterClass="java.lang.String"
+		resultClass="TaskLogTime">
+		    SELECT 
+		    	START_TIME ，END_TIME
+		    FROM 
+		    	INFA_WFLOW_RUN 
+	    	WHERE 
+	    		to_char(START_TIME,'yyyy/mm/dd') = #datetime# 
+	</select>
+
+	<!--取每天最迟时间 -->
+	<select id="findchartsdataend" parameterClass="java.lang.String"
+		resultClass="TaskLogTime">
+		<![CDATA[
+		    SELECT 
+		    	START_TIME , END_TIME
+		    FROM 
+		    	INFA_TASKLOG 
+	    	WHERE 
+	    		to_char(START_TIME,'yyyy/mm/dd') <= #datetime# 
+    		AND 
+    			(
+    				to_char(END_TIME,'yyyy/mm/dd') >= #datetime#
+    			OR
+    				END_TIME is null
+    			)
+    		ORDER BY
+    		  	END_TIME DESC
+     	]]>
+	</select>
+
+
+	<!--查询运行中的任务 -->
+	<select id="findRunningTaskLog" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		SELECT
+		COUNT(*)
+		FROM
+		INFA_TASKLOG
+		WHERE
+		END_TIME is null
+	</select>
+
+	<!--查询成功的任务 -->
+	<select id="findSuccessTaskLog" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+     	<![CDATA[
+		    SELECT 
+		    	COUNT(*) 
+		    FROM 
+		    	INFA_TASKLOG 
+	    	WHERE 
+	    		to_char(START_TIME,'yyyy/mm/dd') <= #datetime# 
+    		AND 
+    			(
+    				to_char(END_TIME,'yyyy/mm/dd') >= #datetime#
+    			OR
+    				END_TIME is null
+    			)
+    		AND
+    			RUN_STATUS_CODE = '1'
+     	]]>
+	</select>
+
+	<!--查询失败的任务 -->
+	<select id="findFailTaskLog" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+     	<![CDATA[
+		    SELECT 
+		    	COUNT(*) 
+		    FROM 
+		    	INFA_TASKLOG 
+	    	WHERE 
+	    		to_char(START_TIME,'yyyy/mm/dd') <= #datetime# 
+    		AND 
+    			(
+    				to_char(END_TIME,'yyyy/mm/dd') >= #datetime#
+    			OR
+    				END_TIME is null
+    			)
+    		AND
+    			RUN_STATUS_CODE = '2'
+     	]]>
+	</select>
+</sqlMap>    

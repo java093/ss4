@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="dict">
+	<typeAlias alias="Dict"
+		type="cn.com.liandisys.infa.entity.mng.Dictentry" />
+
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			select 
+			a.dict_entry,
+			a.add_enable,
+			a.entry_name,
+			c.description as access_level,
+			b.description as dict_type,
+			a.defunct_ind,
+			a.remarks,
+			a.created_by,
+			d.name as createdBy,
+			a.created_datetime
+			from
+			dictentry a left join codemaster_detail b on b.codetype = 'DICT_TYPE' and a.dict_type = b.code
+				left join codemaster_detail c on c.codetype = 'ACCESS_LEVEL' and  a.access_level = c.code
+				left join t_sys_user d on a.created_by = d.id
+			  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ ENTRY_NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY DICT_ENTRY ASC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Dict">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="dictsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		DICTENTRY
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             ENTRY_NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+	
+	<!--初始化任务列表 -->
+	<select id="findAllDict" parameterClass="java.lang.String"
+		resultClass="Dict">
+		SELECT *
+		FROM DICTENTRY
+	</select>
+	
+	<!-- 根据ID查询 -->
+    <select id="findByid" parameterClass="Dict" resultClass="Dict">
+            SELECT
+              		  *
+            FROM
+                   DICTENTRY
+            WHERE
+                   DICT_ENTRY = #dict_entry#
+    </select>
+    
+    <!-- 根据dict_entry查询 -->
+    <select id="findByEntry" resultClass="java.lang.Long"
+		parameterClass="Dict">
+		select
+			count(1)
+		FROM
+            DICTENTRY
+      	WHERE
+            DICT_ENTRY = #dict_entry#
+	  </select>
+    
+    <!-- 查询Dictentry总条数 -->
+	<select id="dictCount" resultClass="java.lang.Long"
+		parameterClass="Dict">
+		select
+		count(*)
+		FROM
+		DICTENTRY
+	</select>
+	
+	<!--插入数据 -->
+	<insert id="insertDict" parameterClass="Dict">
+       INSERT INTO DICTENTRY(
+            DICT_ENTRY,
+            ADD_ENABLE,
+            ENTRY_NAME,
+            ACCESS_LEVEL,
+            DICT_TYPE,
+            DEFUNCT_IND,
+            REMARKS,
+            CREATED_BY,
+            CREATED_DATETIME
+        )VALUES(
+              #dict_entry:VARCHAR#,
+              #add_enable:VARCHAR#,
+              #entry_name:VARCHAR#,
+              #access_level:VARCHAR#,
+              #dict_type:VARCHAR#,
+              #defunct_ind:VARCHAR#,
+              #remarks:VARCHAR#,
+              #created_by:NUMBER#,
+              #created_datetime:TIMESTAMP#
+          )
+     
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateDict" parameterClass="Dict">
+		   	UPDATE DICTENTRY 
+		   	SET
+	            ADD_ENABLE = #add_enable:VARCHAR#,
+	            ENTRY_NAME = #entry_name:VARCHAR#,
+	            ACCESS_LEVEL = #access_level:VARCHAR#,
+	            DICT_TYPE = #dict_type:VARCHAR#,
+	            DEFUNCT_IND = #defunct_ind:VARCHAR#,
+	            REMARKS = #remarks:VARCHAR#,
+		   		DICT_ENTRY = #dict_entry#
+		   	WHERE 
+		   		DICT_ENTRY = #old_dict_entry#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteDict" parameterClass="Dict">
+     	DELETE
+     	FROM DICTENTRY
+     	WHERE
+			DICT_ENTRY = #dict_entry#
+     </delete>
+
+
+</sqlMap>    

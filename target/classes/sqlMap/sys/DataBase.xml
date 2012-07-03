@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="db">
+	<typeAlias alias="DataBase" type="cn.com.liandisys.infa.entity.sys.DataBase" />
+
+	<!--初始化任务列表 -->
+	<select id="findAllDataBase" parameterClass="java.lang.String"
+		resultClass="DataBase">
+		select id ,port,password,dbname,dbtype,username,ip,title,server_name,
+		CASE DBUSE
+		WHEN '0' THEN 'Informatica'
+		WHEN '1' THEN '统一字典'
+		ELSE ' ' END
+		DBUSE
+		from infa_database ORDER BY ID DESC
+	</select>
+
+	<select id="DataBaseCount" resultClass="java.lang.Long"
+		parameterClass="DataBase">
+		select
+		count(1)
+		FROM
+		INFA_DATABASE
+	</select>
+	<select id="findAlldbuse_Informatica" resultClass="DataBase"
+		parameterClass="java.lang.String">
+		select * FROM INFA_DATABASE WHERE id = (select MAX(id)
+		FROM INFA_DATABASE WHERE DBUSE = 0)
+	</select>
+
+	<select id="findByDBName" resultClass="java.lang.Long"
+		parameterClass="DataBase">
+		select
+		count(1)
+		FROM
+		INFA_DATABASE
+		WHERE TITLE
+		=#title:VARCHAR#
+	</select>
+
+	<!-- 编辑 -->
+	<update id="updateDataBase" parameterClass="DataBase">
+		UPDATE
+		INFA_DATABASE
+		SET
+		TITLE = #title:VARCHAR#,
+		DBNAME = #dbname:VARCHAR#,
+		DBTYPE =
+		#dbtype:VARCHAR#,
+		USERNAME =
+		#username:VARCHAR#,
+		PASSWORD =
+		#password:VARCHAR#,
+		PORT =
+		#port:VARCHAR#,
+		IP = #ip:VARCHAR#,
+		dbuse =
+		#dbuse:VARCHAR#,
+		SERVER_NAME = #server_name:VARCHAR#
+		WHERE
+		ID =
+		#id#
+	</update>
+
+	<!-- 当服务器删除时对应取消数据库关联的服务器ID -->
+	<update id="updateInfomatiac_id" parameterClass="DataBase">
+		UPDATE
+		INFA_DATABASE
+		SET
+		dbuse = null
+		WHERE
+		dbuse =
+		#dbuse:VARCHAR#
+	</update>
+
+	<!-- INSERT -->
+	<insert id="insertDataBase" parameterClass="DataBase">
+		INSERT INTO
+		INFA_DATABASE (
+		TITLE,
+		DBNAME,
+		DBTYPE,
+		USERNAME,
+		PASSWORD,
+		PORT,
+		IP,
+		dbuse,
+		SERVER_NAME
+		)
+		VALUES (
+		#title:VARCHAR#,
+		#dbname:VARCHAR#,
+		#dbtype:VARCHAR#,
+		#username:VARCHAR#,
+		#password:VARCHAR#,
+		#port:VARCHAR#,
+		#ip:VARCHAR#,
+		#dbuse:VARCHAR#,
+		#server_name:VARCHAR#
+		)
+	</insert>
+
+	<!-- DELETE -->
+	<delete id="deleteDataBase" parameterClass="DataBase">
+		DELETE
+		FROM
+		INFA_DATABASE
+		WHERE
+		ID = #id#
+	</delete>
+
+	<!-- 根据任务ID查询 -->
+	<select id="findByid" parameterClass="DataBase" resultClass="DataBase">
+		select id ,port,password,dbname,dbtype,username,ip,title,server_name,
+		DBUSE
+
+		from
+		infa_database WHERE
+		ID = #id#
+	</select>
+
+	<!-- 根据任务dbuse查询 ,得到级联数据 -->
+	<select id="findBydbuse" parameterClass="DataBase" resultClass="DataBase">
+		SELECT
+		*
+		FROM
+		INFA_DATABASE
+		WHERE
+		dbuse = #dbuse#
+	</select>
+
+	<select id="findDB" parameterClass="java.math.BigDecimal"
+		resultClass="java.util.HashMap">
+		SELECT
+		ID,
+		TITLE
+		FROM
+		INFA_DATABASE
+		WHERE
+		DBUSE = 0 ORDER BY ID DESC
+	</select>
+</sqlMap>    

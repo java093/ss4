@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="TaskLog">
+	<typeAlias alias="TaskLog"
+		type="cn.com.liandisys.infa.entity.mng.TaskLog" />
+	<typeAlias alias="TaskLogTime"
+		type="cn.com.liandisys.infa.entity.index.TaskLogTime" />
+
+	<update id="updateStatusById" parameterClass="TaskLog">
+		update INFA_TASKLOG
+		set RUN_STATUS_CODE = #run_status_code#
+		where id = #id#
+	</update>
+	<update id="updateSubStatusById" parameterClass="TaskLog">
+		update INFA_SUBTASKLOG
+		set RUN_STATUS_CODE = #run_status_code#
+		where id = #id#
+	</update>
+	<update id="updateTaskLog" parameterClass="TaskLogTime">
+		update INFA_TASKLOG
+		set RUN_STATUS_CODE = #RUN_STATUS_CODE# , END_TIME = #END_TIME#
+		where id = #id#
+	</update>
+	<update id="updateSubTaskLog" parameterClass="TaskLogTime">
+		update INFA_SUBTASKLOG
+		set RUN_STATUS_CODE = #RUN_STATUS_CODE# , END_TIME = #END_TIME#
+		where id = #id#
+	</update>
+
+</sqlMap>    

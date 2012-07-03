@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="plan">  
+	<typeAlias alias="Plan" type="cn.com.liandisys.infa.entity.plan.Plan"/>	
+	<typeAlias alias="QuartzPlan" type="cn.com.liandisys.infa.entity.job.QuartzPlan"/>	
+	<typeAlias alias="QuartzTaskPlan" type="cn.com.liandisys.infa.entity.job.QuartzTaskPlan"/>	
+	
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			SELECT ID,
+				NAME, 
+				TIME, 
+				STARTEDTIME, 
+				ENDDATE, 
+				DAY_PLAN, 
+				DAY_PLAN_MONTH, 
+				EXPLAIN,
+				CREATETIME, 
+				UPDATETIME,
+				UPDATEUSERID, 						
+		   CASE TYPE 
+  				 WHEN '0' THEN '仅执行一次'
+  				 WHEN '1' THEN '每天'
+   				 WHEN '2' THEN '每月'
+   	       		 ELSE ' ' END TYPE ,
+   	       CASE START_FLAG       
+   	             WHEN '0' THEN '关闭'
+   	             WHEN '1' THEN '开启'
+   	       		 ELSE ' ' END START_FLAG
+		   FROM INFA_PLAN ]]>
+		   <dynamic prepend=" where ">
+		   <isNotNull prepend="AND " property="type">
+            <![CDATA[ TYPE like '%'||#type:VARCHAR#||'%' ESCAPE '\']]>
+			</isNotNull>
+			<isNotNull prepend="AND " property="name">
+            <![CDATA[  NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\']]>
+			</isNotNull>
+		</dynamic> 
+		 ORDER BY ID DESC 
+	</sql> 
+    
+	<select id="findSearhPlan" parameterClass="java.util.HashMap"
+		resultClass="Plan">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+	
+    	<sql id="findByTaskSearch_segment">
+	<![CDATA[
+			SELECT ID,
+				NAME, 
+				TIME, 
+				STARTEDTIME, 
+				ENDDATE, 
+				DAY_PLAN, 
+				DAY_PLAN_MONTH, 
+				EXPLAIN,
+				CREATETIME, 
+				UPDATETIME,
+				UPDATEUSERID, 
+				TYPE TYPEID,						
+		   CASE TYPE 
+  				 WHEN '0' THEN '仅执行一次'
+  				 WHEN '1' THEN '每天'
+   				 WHEN '2' THEN '每月'
+   	       		 ELSE ' ' END TYPE,
+   	       CASE START_FLAG       
+   	             WHEN '0' THEN '关闭'
+   	             WHEN '1' THEN '开启'
+   	       		 ELSE ' ' END START_FLAG
+		   FROM INFA_PLAN 
+		   WHERE START_FLAG='1']]>
+		   <isNotNull prepend="AND " property="type">
+            <![CDATA[ TYPE like '%'||#type:VARCHAR#||'%' ESCAPE '\']]>
+			</isNotNull>
+			<isNotNull prepend="AND " property="name">
+            <![CDATA[  NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\']]>
+			</isNotNull>
+		
+		 ORDER BY ID DESC 
+	</sql> 
+    
+	<select id="findTaskSearhPlan" parameterClass="java.util.HashMap"
+		resultClass="Plan">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findByTaskSearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+    
+    
+       <select id="plansearchTaskCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_PLAN
+		WHERE START_FLAG='1'
+		<isNotNull prepend="AND " property="type">
+             TYPE like '%'||#type:VARCHAR#||'%' ESCAPE '\'
+		</isNotNull>
+		<isNotNull prepend="AND " property="name">
+             NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+		</isNotNull> 
+	</select> 
+    
+    
+    
+   <select id="plansearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_PLAN
+		<dynamic prepend=" where ">
+		<isNotNull prepend="AND " property="type">
+             TYPE like '%'||#type:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+			<isNotNull prepend="AND " property="name">
+             NAME like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+ 
+     <!-- 删除-->
+     <delete id="deletePlan" parameterClass="Plan">
+		delete
+			FROM 
+				infa_plan 
+		where
+			id 	= #id#
+     </delete>
+     <delete id="deleteTaskPlan" parameterClass="Plan">
+		delete
+			FROM 
+				infa_taskplan 
+		where
+			planid 	= #id#	
+     </delete>
+     
+     <!-- Group表添加信息 -->
+     <insert id="insertPlan" parameterClass="Plan">
+       INSERT INTO infa_plan(
+            NAME,
+            type,
+            START_FLAG,
+            explain,
+            time,
+            STARTEDTIME,
+            enddate,
+            day_plan_month,
+            CREATETIME,
+            CRON_EXPRESSION,
+            UPDATEUSERID
+        )VALUES(
+            #name:VARCHAR#,
+            #type:VARCHAR#,
+            #start_flag:VARCHAR#,
+            #explain:VARCHAR#,
+            #time:VARCHAR#, 
+        	#startedtime:VARCHAR#,
+        	#enddate:VARCHAR#,
+        	#day_plan_month:VARCHAR#,
+        	current_timestamp,
+        	#cron_expression:VARCHAR#,
+        	#updateuserid:VARCHAR#
+        	
+        )
+     </insert>
+     
+     
+     	<!-- 根据任务ID查询 -->
+	<select id="findByid" parameterClass="Plan" resultClass="Plan">
+		SELECT
+		*
+		FROM
+		INFA_PLAN
+		WHERE
+		ID = #id#
+	</select>
+	
+	
+	   <!--    	根据taskID查询plan -->
+	<select id="findBytaskid" parameterClass="QuartzPlan" resultClass="QuartzPlan">
+		select * from (
+			select a.type ,a.time ,a.startedtime,a.enddate,a.cron_expression ,b.planid ,b.taskid 
+			from infa_plan  a left join infa_taskplan b on a.id = b.planid 
+		)where to_char(taskid) = #taskid#
+	</select> 
+	
+	
+	<!--  根据planID查询taskID  -->
+	<select id="gettaskid2" parameterClass="QuartzTaskPlan" resultClass="QuartzTaskPlan">
+		select * from infa_taskplan  where to_char(planid) = #planid:VARCHAR#
+	</select> 
+	
+	<select id="gettaskcount" resultClass="java.lang.Long" parameterClass="java.lang.String">
+		select
+		count(*)
+		FROM
+		infa_taskplan
+		where to_char(taskid) = #taskid:VARCHAR#
+	</select>
+	
+	
+	<!-- 编辑 -->
+	<update id="updatePlan" parameterClass="Plan">
+		UPDATE 
+		INFA_PLAN SET 
+		    NAME = #name:VARCHAR#,
+            type = #type:VARCHAR#,
+            START_FLAG = #start_flag:VARCHAR#,
+            explain = #explain:VARCHAR#,
+            time = #time:VARCHAR#,
+            STARTEDTIME = #startedtime:VARCHAR#,
+            enddate = #enddate:VARCHAR#,
+            day_plan_month = #day_plan_month:VARCHAR#,
+            UPDATETIME = current_timestamp,
+            CRON_EXPRESSION = #cron_expression:VARCHAR#,
+            UPDATEUSERID = #updateuserid:VARCHAR#
+		WHERE
+		ID = #id#
+	</update>
+     	<select id="findByDBName" resultClass="java.lang.Long"
+				parameterClass="Plan">
+		select
+		count(1)
+		FROM
+		INFA_PLAN
+		WHERE name =#name:VARCHAR#
+	  </select>
+
+</sqlMap>    

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="informatica">
+	<typeAlias alias="Informatica"
+		type="cn.com.liandisys.infa.entity.sys.Informatica" />
+	<typeAlias alias="DataBase" type="cn.com.liandisys.infa.entity.sys.DataBase" />
+	<typeAlias alias="InfaDetail" type="cn.com.liandisys.infa.entity.sys.InfaDetail" />
+
+	<!--初始化任务列表 -->
+	<select id="findAllInformatica" parameterClass="java.lang.String"
+		resultClass="Informatica">
+		select a.id ,a.SERVER_NAME ,a.IP,a.PORT,a.DOMAIN
+		,a.INTEGRATION_SERVER,a.USER_NAME,a.PASSWORD,a.sesslogpath,a.wrlogpath,b.title
+		as KNOWLEDGE_BASE
+		from infa_infomatic a left join infa_database b on
+		a.KNOWLEDGE_BASE =
+		to_char(b.id) ORDER BY a.ID DESC
+	</select>
+
+	<!-- 编辑 -->
+	<update id="updateInformatica" parameterClass="Informatica">
+		UPDATE
+		INFA_INFOMATIC SET
+		SERVER_NAME = #server_name:VARCHAR#,
+		IP =
+		#ip:VARCHAR#,
+		PORT = #port:VARCHAR#,
+		DOMAIN = #domain:VARCHAR#,
+		KNOWLEDGE_BASE = #knowledge_base:VARCHAR#,
+		INTEGRATION_SERVER =
+		#integration_server:VARCHAR#,
+		USER_NAME =
+		#user_name:VARCHAR#,
+		PASSWORD =
+		#password:VARCHAR#,
+		WRLOGPATH = #wrlogpath:VARCHAR#,
+		SESSLOGPATH =
+		#sesslogpath:VARCHAR#
+		WHERE
+		ID = #id#
+
+	</update>
+
+	<!-- 查询Informatica总条数 -->
+	<select id="InformaticaCount" resultClass="java.lang.Long"
+		parameterClass="Informatica">
+		select
+		count(1)
+		FROM
+		INFA_INFOMATIC
+	</select>
+
+	<!-- INSERT -->
+	<insert id="insertInformatica" parameterClass="Informatica">
+		INSERT INTO
+		INFA_INFOMATIC (
+		SERVER_NAME,
+		IP,
+		PORT,
+		DOMAIN,
+		KNOWLEDGE_BASE,
+		INTEGRATION_SERVER,
+		USER_NAME,
+		PASSWORD,
+		WRLOGPATH,
+		SESSLOGPATH
+		) VALUES (
+		#server_name:VARCHAR#,
+		#ip:VARCHAR#,
+		#port:VARCHAR#,
+		#domain:VARCHAR#,
+		#knowledge_base:VARCHAR#,
+		#integration_server:VARCHAR#,
+		#user_name:VARCHAR#,
+		#password:VARCHAR#,
+		#wrlogpath:VARCHAR#,
+		#sesslogpath:VARCHAR#
+		)
+	</insert>
+
+	<!-- DELETE -->
+	<delete id="deleteInformatica" parameterClass="Informatica">
+		DELETE
+		FROM
+		INFA_INFOMATIC
+		WHERE
+		ID = #id#
+	</delete>
+
+	<!-- 根据任务ID查询 -->
+	<select id="findByid" parameterClass="Informatica" resultClass="Informatica">
+		SELECT
+		*
+		FROM
+		INFA_INFOMATIC
+		WHERE
+		ID = #id#
+	</select>
+
+	<select id="findByName" resultClass="java.lang.Long"
+		parameterClass="Informatica">
+		select
+		count(1)
+		FROM
+		INFA_INFOMATIC
+		WHERE SERVER_NAME
+		=#server_name:VARCHAR#
+	</select>
+	<select id="findInfomatic" parameterClass="java.math.BigDecimal"
+		resultClass="java.util.HashMap">
+		SELECT
+		ID as VALUE,
+		SERVER_NAME as NAME
+		FROM
+		INFA_INFOMATIC
+	</select>
+
+	<select id="findInfomaticbyDB" parameterClass="DataBase"
+		resultClass="Informatica">
+		select * from INFA_INFOMATIC where id = (select
+		infomatic_id from infa_database where id = #infomatic_id#)
+	</select>
+	
+	<!-- 查询Informatica详细信息（包含数据库信息） -->
+	<select id="selectInfaDetail" parameterClass="InfaDetail" resultClass="InfaDetail">
+		SELECT 
+			B.ID AS INFAID
+			,B.IP AS INFAIP
+			,B.PORT AS INFAPORT
+			,B."DOMAIN" AS INFADOMAIN
+			,B.USER_NAME AS INFAUSERNAME
+			,B.PASSWORD AS INFAPASS
+			,A.ID AS DBID
+			,A.IP AS DBIP
+			,A.PORT AS DBPORT
+			,A.DBNAME AS DBNAME
+			,A.USERNAME AS DBUSER
+			,A.PASSWORD AS DBPASS
+		FROM 
+			INFA_DATABASE A
+			,INFA_INFOMATIC B
+		WHERE
+			A.ID = B.KNOWLEDGE_BASE
+			AND A.DBUSE = '0'
+			<isNotNull property="infaId">
+			AND B.ID = #infaId#
+			</isNotNull>
+			<isNotNull property="dbId">
+			AND A.ID = #dbId#
+			</isNotNull>
+	</select>
+</sqlMap>    

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="code">
+	<typeAlias alias="Code"
+		type="cn.com.liandisys.infa.entity.mng.CodeMaster" />
+	<sql id="findBySearch_segment">
+		<![CDATA[
+			 SELECT *
+			 FROM CODEMASTER  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ CODETYPE like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY ID DESC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Code">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="codesearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		CODEMASTER
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             CODETYPE like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+	
+	<!--初始化任务列表 -->
+	<select id="findAllCode" parameterClass="java.lang.String"
+		resultClass="Code">
+		SELECT *
+		FROM CODEMASTER
+	</select>
+	
+	<!-- 根据ID查询 -->
+    <select id="findByid" parameterClass="Code" resultClass="Code">
+            SELECT
+              		  *
+            FROM
+                   CODEMASTER
+            WHERE
+                   ID = #id#
+    </select>
+    
+    <!-- 根据codeType查询 -->
+    <select id="findByType" resultClass="java.lang.Long"
+		parameterClass="Code">
+		select
+		count(1)
+		FROM
+		CODEMASTER
+		WHERE CODETYPE =#codetype:VARCHAR#
+	  </select>
+    
+    <!-- 查询CodeMaster总条数 -->
+	<select id="codeCount" resultClass="java.lang.Long"
+		parameterClass="Code">
+		select
+		count(*)
+		FROM
+		CODEMASTER
+	</select>
+	
+	<!--插入数据 -->
+	<insert id="insertCode" parameterClass="Code">
+       INSERT INTO CODEMASTER(
+            CODETYPE,
+            DESCRIPTION,
+            FLAG
+        )VALUES(
+              #codetype:VARCHAR#,
+              #description:VARCHAR#,
+              #flag:VARCHAR#
+          )
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateCode" parameterClass="Code">
+		   	UPDATE CODEMASTER 
+		   	SET
+			   	CODETYPE = #codetype:VARCHAR#,
+			   	DESCRIPTION = #description:VARCHAR#,
+			   	FLAG = #flag:VARCHAR#
+		   	WHERE 
+		   		ID = #id#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteCode" parameterClass="Code">
+     	DELETE
+     	FROM CODEMASTER
+     	WHERE
+			ID = #id#
+     </delete>
+
+</sqlMap>    

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig 
+    PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" 
+
+    "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+	<settings cacheModelsEnabled="true" enhancementEnabled="true" lazyLoadingEnabled="true" maxRequests="32"
+            maxSessions="10" maxTransactions="5" useStatementNamespaces="true" />
+
+     <sqlMap resource="sqlMap/account/Account.xml" />
+     <sqlMap resource="sqlMap/job/Task.xml" />
+     <sqlMap resource="sqlMap/job/WorkFlow.xml" />
+     <sqlMap resource="sqlMap/sys/MailConfig.xml" />
+     <sqlMap resource="sqlMap/sys/Informatica.xml" />
+     <sqlMap resource="sqlMap/sys/DataBase.xml" />
+     <sqlMap resource="sqlMap/mng/Mng.xml" />
+     <sqlMap resource="sqlMap/mng/CodeMaster.xml" />
+     <sqlMap resource="sqlMap/mng/CodeMasterDetail.xml" />
+     <sqlMap resource="sqlMap/mng/ConTranDict.xml" />
+     <sqlMap resource="sqlMap/mng/SysDictionary.xml" />
+     <sqlMap resource="sqlMap/mng/Session.xml" />
+     <sqlMap resource="sqlMap/mng/Dictentry.xml" />
+     <sqlMap resource="sqlMap/mng/InfaWflowRun.xml" />
+     <sqlMap resource="sqlMap/mng/InfaSessLog.xml" />
+     <sqlMap resource="sqlMap/plan/Plan.xml" />
+     <sqlMap resource="sqlMap/taskplan/TaskPlan.xml" />
+     <sqlMap resource="sqlMap/taskDetail/TaskDetail.xml" />
+     <sqlMap resource="sqlMap/taskDetail/TaskLog.xml" />
+     <sqlMap resource="sqlMap/syn/InfaSyn.xml" />
+     <sqlMap resource="sqlMap/syn/TaskSyn.xml" />
+     <sqlMap resource="sqlMap/index/Index.xml" />
+     
+     <sqlMap resource="sqlMap/acct_SqlMap.xml" /> 
+</sqlMapConfig>

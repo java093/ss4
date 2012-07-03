@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="session">
+	<typeAlias alias="Session"
+		type="cn.com.liandisys.infa.entity.mng.Session" />
+
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			 SELECT *
+			 FROM INFA_SESSION  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ CHECK_LEVEL like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY SUBJ_NAME DESC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Session">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+	
+	<select id="sessionsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_SESSION
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             CHECK_LEVEL like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+
+	<!--初始化任务列表 -->
+	<select id="findAllSession" parameterClass="java.lang.String"
+		resultClass="Session">
+		SELECT *
+		FROM INFA_SESSION
+	</select>
+	
+	<!-- 根据会话ID查询 -->
+    <select id="findByid" parameterClass="Session" resultClass="Session">
+            SELECT
+              		  *
+            FROM
+                   INFA_SESSION
+            WHERE
+                   SESSION_ID = #session_id#
+    </select>
+	<!-- 根据check_level查询 -->
+    <select id="findBylevel" parameterClass="Session" resultClass="Session">
+            SELECT
+              		  *
+            FROM
+                   INFA_SESSION
+            WHERE
+                   CHECK_LEVEL = #check_level#
+    </select>
+    
+    <!-- 查询此check_level的Session总条数 -->
+	<select id="sessionCountByLevel" resultClass="java.lang.Long"
+		parameterClass="Session">
+		select
+		count(*)
+		FROM
+		INFA_SESSION
+		WHERE
+                   CHECK_LEVEL = #check_level#
+	</select>
+	
+    <!-- 查询Session总条数 -->
+	<select id="sessionCount" resultClass="java.lang.Long"
+		parameterClass="Session">
+		select
+		count(*)
+		FROM
+		INFA_SESSION
+	</select>
+	
+	<!--插入数据 -->
+	<insert id="insertSession" parameterClass="Session">
+       INSERT INTO INFA_SESSION(
+			SUBJ_NAME,
+			SUBJ_ID,
+			SESSION_NAME,
+			SESSION_ID,
+			WORKFLOW_NAME,
+			WORKFLOW_ID,
+			MAPPING_NAME,
+			MAPPING_ID,
+			CHECK_LEVEL,
+			CHECK_LEVEL_DESC,
+			CHECK_TYPE,
+			CHECK_TYPE_DESC,
+			DEFAULT_IND
+        )VALUES(
+              #subj_name:VARCHAR#,
+              #subj_id:NUMBER#,
+              #session_name:VARCHAR#,
+              #session_id:NUMBER#,
+              #workflow_name:VARCHAR#,
+              #workflow_id:NUMBER#,
+              #mapping_name:VARCHAR#,
+              #mapping_id:NUMBER#,
+              #check_level:VARCHAR#,
+              #check_level_desc:VARCHAR#,
+              #check_type:VARCHAR#,
+              #check_type_desc:VARCHAR#,
+              #default_ind:VARCHAR#
+          )
+     
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateSession" parameterClass="Session">
+		   	UPDATE INFA_SESSION 
+		   	SET
+			   	CHECK_LEVEL = #check_level:VARCHAR#,
+			   	CHECK_LEVEL_DESC = #check_level_desc:VARCHAR#,
+			   	CHECK_TYPE = #check_type:VARCHAR#,
+			   	CHECK_TYPE_DESC = #check_type_desc:VARCHAR#,
+			   	DEFAULT_IND = #default_ind:VARCHAR#
+		   	WHERE 
+		   		SESSION_ID = #session_id#
+		   	AND
+		   		MAPPING_ID = #mapping_id#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteSession" parameterClass="Session">
+     	DELETE
+     	FROM INFA_SESSION
+     	WHERE
+			SESSION_ID = #session_id#
+     </delete>
+
+
+</sqlMap>    

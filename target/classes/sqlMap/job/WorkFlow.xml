@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="workflow">  
+	<typeAlias alias="WorkFlow" type="cn.com.liandisys.infa.entity.job.WorkFlow"/>
+	
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			  SELECT A.ID,A.WORKFLOW_NAME,A.ALIAS,A.SUBJECT_AREA,A.CREATETIME,A.UPDATETIME,A.EXPLAIN,B.NAME UPDATEUSERID,C.SERVER_NAME INFAMATIC
+              FROM INFA_WORKFLOW  A 
+              LEFT JOIN T_SYS_USER B ON  A.UPDATEUSERID =B.ID 
+              LEFT JOIN INFA_INFOMATIC  C ON  A.INFA_ID =C.ID 			 
+			 ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ A.ALIAS like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>    
+			</isNotNull>
+			<isNotNull prepend="AND " property="infa_id">
+        <![CDATA[ A.INFA_ID like '%'||#infa_id:DECIMAL#||'%' ESCAPE '\' ]]>       
+			</isNotNull>
+		</dynamic>
+		ORDER BY A.ID DESC
+	</sql>
+	
+	
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="WorkFlow">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="workflowsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_WORKFLOW
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             ALIAS like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+     
+     <!--  删除workflow-->
+        <delete id="deleteWorkFlow" parameterClass="WorkFlow">
+                DELETE
+                FROM INFA_WORKFLOW
+                WHERE
+                     ID = #id#
+      </delete>
+      
+      <!--  删除workflow时，把和workflow有关联的TaskDetail信息删除-->
+     <delete id="deleteTaskDetail" parameterClass="WorkFlow">
+         DELETE
+         FROM INFA_TASK_DETAIL
+         WHERE
+         WORKFLOWID = #id#
+     </delete>
+
+
+     
+
+     <!--根据ID查询 -->
+     <select id="findByid" parameterClass="WorkFlow" resultClass="WorkFlow">
+			SELECT *
+			FROM INFA_WORKFLOW  
+			WHERE ID = #id#
+     </select>
+
+	<!--根据WORKFLOW_ID查询 -->
+     <select id="findByWORKFLOW_ID" parameterClass="WorkFlow" resultClass="WorkFlow">
+			SELECT *
+			FROM INFA_WORKFLOW  
+			WHERE WORKFLOW_ID = #WORKFLOW_ID#
+     </select>
+	
+	<!--编辑workflow-->
+     <update id="updateWorkFlow" parameterClass="WorkFlow">
+		   	UPDATE INFA_WORKFLOW 
+		   	SET
+			   	ALIAS = #ALIAS:VARCHAR#,
+			   	EXPLAIN = #EXPLAIN:VARCHAR#,
+			   	UPDATETIME = #UPDATETIME:TIMESTAMP#
+		   	WHERE 
+		   		ID = #id#
+     </update>
+     <!--查询workflow表的数据 -->
+     <select id="findAllWorkFlow" parameterClass="WorkFlow" resultClass="WorkFlow">
+			SELECT *
+			FROM INFA_WORKFLOW  
+     </select>
+     
+     <!--导入时，如果数据中已存在workflow，则根据workflow_id更新-->
+     <update id="refreshWorkFlow" parameterClass="WorkFlow">
+		   	UPDATE INFA_WORKFLOW 
+		   	SET
+		   		SUBJECT_AREA = #SUBJECT_AREA:VARCHAR#,
+		   		WORKFLOW_NAME = #WORKFLOW_NAME:VARCHAR#,
+		   		SCHEDULER_NAME = #SCHEDULER_NAME:VARCHAR#,
+		   		START_TIME = #START_TIME:VARCHAR#,
+		   		END_TIME = #END_TIME:VARCHAR#,
+			   	ALIAS = #ALIAS:VARCHAR#,
+			   	EXPLAIN = #EXPLAIN:VARCHAR#,
+			   	UPDATETIME = #UPDATETIME:TIMESTAMP#,
+			    DB_ID = #DB_ID:NUMBER#,
+			    INFA_ID = #INFA_ID:NUMBER#
+		   	WHERE 
+		   		WORKFLOW_ID = #WORKFLOW_ID#
+     </update>
+     
+      <!--导入数据到INFA_WORKFLOW表-->
+          <insert id="insertWorkFlow" parameterClass="WorkFlow">
+       INSERT INTO INFA_WORKFLOW(  
+           SUBJECT_AREA,
+           WORKFLOW_NAME,
+           SCHEDULER_NAME,
+           START_TIME,
+           END_TIME,
+           WORKFLOW_ID,
+           ALIAS,
+           CREATETIME,
+           UPDATETIME,
+           UPDATEUSERID,
+           DB_ID,
+           INFA_ID
+        )VALUES(
+            #SUBJECT_AREA:VARCHAR#,
+            #WORKFLOW_NAME:VARCHAR#,
+            #SCHEDULER_NAME:VARCHAR#,
+            #START_TIME:VARCHAR#,
+            #END_TIME:VARCHAR#,
+            #WORKFLOW_ID:DOUBLE#,
+            #ALIAS:VARCHAR#,
+            #CREATETIME:TIMESTAMP#,
+            #UPDATETIME:TIMESTAMP#,
+            #UPDATEUSERID:VARCHAR#,
+            #DB_ID:NUMBER#,
+            #INFA_ID:NUMBER#
+          )    
+     </insert> 
+     
+     <!--workflow别名重名校验-->
+     <select id="findByALIAS" resultClass="java.lang.Long"
+		parameterClass="WorkFlow">
+		select
+		count(1)
+		FROM
+		INFA_WORKFLOW
+		WHERE ALIAS =#ALIAS:VARCHAR#
+	  </select>
+
+      
+      
+     <!--中间表INFA_WORKFLOW_TEMP 中的相关操作-->   
+     <!--查询INFA_WORKFLOW_TEMP表的数据 -->
+     <select id="findAllWorkFlowTemp" parameterClass="WorkFlow" resultClass="WorkFlow">
+			SELECT *
+			FROM INFA_WORKFLOW_TEMP  
+     </select>
+   
+      <!--根据ID查询  查询中间表INFA_WORKFLOW_TEMP 中的workflow-->
+     <select id="findTempByid" parameterClass="WorkFlow" resultClass="WorkFlow">
+			SELECT *
+			FROM INFA_WORKFLOW_TEMP  
+			WHERE ID = #id#
+     </select>
+	
+	<!--中间表INFA_WORKFLOW_TEMP数据分页 -->
+     <select id="workflowTempCount" resultClass="java.lang.Long"
+		parameterClass="WorkFlow">
+		SELECT
+		COUNT(1)
+		FROM
+		INFA_WORKFLOW_TEMP
+	</select>
+	
+	<!-- 修改后的分页 -->
+	<sql id="findBySearch_segment_Temp">
+	<![CDATA[
+			 SELECT *
+			 FROM INFA_WORKFLOW_TEMP ]]>		
+		ORDER BY ID DESC
+	</sql>
+	
+	<select id="findSearch_Temp" parameterClass="java.util.HashMap"
+		resultClass="WorkFlow">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment_Temp"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="workflowsearchCount_Temp" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_WORKFLOW_TEMP 
+	</select> 
+	
+	
+	
+	 <!--  清空INFA_WORKFLOW_TEMP表的数据-->
+     <delete id="deleteWorkFlowTemp" parameterClass="WorkFlow">
+        TRUNCATE TABLE  INFA_WORKFLOW_TEMP
+     </delete>
+       
+    <!--添加数据到INFA_WORKFLOW_TEMP表-->
+          <insert id="insertWorkFlowTemp" parameterClass="WorkFlow">
+       INSERT INTO INFA_WORKFLOW_TEMP(  
+           SUBJECT_AREA,
+           WORKFLOW_NAME,
+           SCHEDULER_NAME,
+           START_TIME,
+           END_TIME,
+           WORKFLOW_ID,
+           DB_ID,
+           INFA_ID
+        )VALUES(
+            #SUBJECT_AREA:VARCHAR#,
+            #WORKFLOW_NAME:VARCHAR#,
+            #SCHEDULER_NAME:VARCHAR#,
+            #START_TIME:VARCHAR#,
+            #END_TIME:VARCHAR#,
+            #WORKFLOW_ID:DOUBLE#,
+            #DB_ID:NUMBER#,
+            #INFA_ID:NUMBER#
+           
+          )    
+     </insert> 
+
+</sqlMap>    

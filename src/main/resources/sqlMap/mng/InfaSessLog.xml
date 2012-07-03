@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="InfaSessLog">
+	<typeAlias alias="InfaSessLog"
+		type="cn.com.liandisys.infa.entity.mng.InfaSessLog" />
+	<typeAlias alias="Informatica"
+		type="cn.com.liandisys.infa.entity.sys.Informatica" />
+
+	<resultMap class="InfaSessLog" id="InfaSessLogResult">
+		<result property="id" column="ID" />
+		<result property="subjectArea" column="SUBJECT_AREA" />
+		<result property="subjectId" column="SUBJECT_ID" />
+		<result property="sessionName" column="SESSION_NAME" />
+		<result property="sessionId" column="SESSION_ID" />
+		<result property="sessionInstanceName" column="SESSION_INSTANCE_NAME" />
+		<result property="successfulRows" column="SUCCESSFUL_ROWS" />
+		<result property="failedRows" column="FAILED_ROWS" />
+		<result property="successfulSourceRows" column="SUCCESSFUL_SOURCE_ROWS" />
+		<result property="failedSourceRows" column="FAILED_SOURCE_ROWS" />
+		<result property="firstCode" column="FIRST_ERROR_CODE" />
+		<result property="firstMsg" column="FIRST_ERROR_MSG" />
+		<result property="lastCode" column="LAST_ERROR_CODE" />
+		<result property="lastError" column="LAST_ERROR" />
+		<result property="runCode" column="RUN_STATUS_CODE" />
+		<result property="actualStart" column="ACTUAL_START" />
+		<result property="sessionTimestamp" column="SESSION_TIMESTAMP" />
+		<result property="sessionFile" column="SESSION_LOG_FILE" />
+		<result property="badLocation" column="BAD_FILE_LOCATION" />
+		<result property="taskNumber" column="TASK_VERSION_NUMBER" />
+		<result property="workflowNumber" column="WORKFLOW_VERSION_NUMBER" />
+		<result property="workflowName" column="WORKFLOW_NAME" />
+		<result property="mappingName" column="MAPPING_NAME" />
+		<result property="totalErr" column="TOTAL_ERR" />
+		<result property="workflowId" column="WORKFLOW_ID" />
+		<result property="workflowRunId" column="WORKFLOW_RUN_ID" />
+		<result property="workletId" column="WORKLET_RUN_ID" />
+		<result property="instanceId" column="INSTANCE_ID" />
+		<result property="infomaticId" column="INFOMATIC_ID" />
+		<result property="logDetail" column="LOG_DETAIL" />
+	</resultMap>
+
+	<sql id="prop_segment">
+		TOTAL_ERR
+		,WORKFLOW_ID
+		,WORKFLOW_RUN_ID
+		,WORKLET_RUN_ID
+		,INSTANCE_ID
+		,SUBJECT_AREA
+		,SUBJECT_ID
+		,SESSION_NAME
+		,SESSION_ID
+		,SESSION_INSTANCE_NAME
+		,SUCCESSFUL_ROWS
+		,FAILED_ROWS
+		,SUCCESSFUL_SOURCE_ROWS
+		,FAILED_SOURCE_ROWS
+		,FIRST_ERROR_CODE
+		,FIRST_ERROR_MSG
+		,LAST_ERROR_CODE
+		,LAST_ERROR
+		,RUN_STATUS_CODE
+		,ACTUAL_START
+		,SESSION_TIMESTAMP
+		,SESSION_LOG_FILE
+		,BAD_FILE_LOCATION
+		,TASK_VERSION_NUMBER
+		,WORKFLOW_VERSION_NUMBER
+		,WORKFLOW_NAME
+		,MAPPING_NAME
+	</sql>
+
+	<select id="selectRepSessLog">
+		SELECT
+		<include refid="prop_segment" />
+		FROM REP_SESS_LOG
+		WHERE WORKFLOW_RUN_ID IN ({0})
+		AND WORKFLOW_ID IN
+		({1})
+	</select>
+
+	<insert id="insertInfaSessLog" parameterClass="InfaSessLog">
+		insert into infa_sess_log (
+		<include refid="prop_segment" />
+		,INFOMATIC_ID
+		) VALUES (
+		#totalErr:VARCHAR#
+		,#workflowId:NUMBER#
+		,#workflowRunId:NUMBER#
+		,#workletId:NUMBER#
+		,#instanceId:NUMBER#
+		,#subjectArea:VARCHAR#
+		,#subjectId:NUMBER#
+		,#sessionName:VARCHAR#
+		,#sessionId:NUMBER#
+		,#sessionInstanceName:VARCHAR#
+		,#successfulRows:NUMBER#
+		,#failedRows:NUMBER#
+		,#successfulSourceRows:NUMBER#
+		,#failedSourceRows:NUMBER#
+		,#firstCode:NUMBER#
+		,#firstMsg:VARCHAR#
+		,#lastCode:NUMBER#
+		,#lastError:VARCHAR#
+		,#runCode:NUMBER#
+		,#actualStart:DATE#
+		,#sessionTimestamp:DATE#
+		,#sessionFile:VARCHAR#
+		,#badLocation:VARCHAR#
+		,#taskNumber:NUMBER#
+		,#workflowNumber:NUMBER#
+		,#workflowName:VARCHAR#
+		,#mappingName:VARCHAR#
+		,#infomaticId:NUMBER#
+		)
+	</insert>
+
+
+	<!--查询infa_sess_log表的数据 -->
+	<select id="findsessByLog" parameterClass="InfaSessLog"
+		resultMap="InfaSessLogResult" resultClass="InfaSessLog">
+		SELECT *
+		FROM INFA_SESS_LOG
+		WHERE
+		SESSION_LOG_FILE IS NOT
+		NULL
+		AND
+		LOG_DETAIL IS NULL
+	</select>
+
+	<!--查询infa_informatic表的数据 -->
+	<select id="findinfoById" parameterClass="java.lang.Long"
+		resultClass="java.lang.String">
+		SELECT SESSLOGPATH
+		FROM INFA_INFOMATIC
+		WHERE
+		ID = #id#
+	</select>
+
+	<!-- 更新infa_sess_log表的LogDetail -->
+	<update id="refreshSesLogDetail" parameterClass="InfaSessLog">
+		UPDATE
+		INFA_SESS_LOG
+		SET
+		LOG_DETAIL = #logDetail:VARCHAR#
+		WHERE
+		ID = #id#
+	</update>
+</sqlMap>

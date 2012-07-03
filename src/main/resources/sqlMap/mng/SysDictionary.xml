@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="sysdict">
+	<typeAlias alias="SysDict"
+		type="cn.com.liandisys.infa.entity.mng.SysDictionary" />
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			select 
+			a.dict_entry,
+			b.description as dict_type,
+			a.subentry,
+			c.description as access_level,
+			a.dict_prompt,
+			a.defunct_ind,
+			a.remarks,
+			a.created_by,
+			d.name as createdBy,
+			a.created_datetime
+			from
+			sysdictionary a left join codemaster_detail b on b.codetype = 'DICT_TYPE' and a.dict_type = b.code
+				left join codemaster_detail c on c.codetype = 'ACCESS_LEVEL' and  a.access_level = c.code
+				left join t_sys_user d on a.created_by = d.id  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ DICT_PROMPT like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY DICT_ENTRY ASC,SUBENTRY ASC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="SysDict">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="sysdictsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		SYSDICTIONARY
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             DICT_PROMPT like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+	
+	<!--初始化任务列表 -->
+	<select id="findAllSysDict" parameterClass="java.lang.String"
+		resultClass="SysDict">
+		SELECT *
+		FROM SYSDICTIONARY
+	</select>
+	
+	<!-- 根据ID查询 -->
+    <select id="findByid" parameterClass="SysDict" resultClass="SysDict">
+            SELECT
+              		  *
+            FROM
+                   SYSDICTIONARY
+            WHERE
+                   DICT_ENTRY = #dict_entry#
+            AND
+                   SUBENTRY = #subentry#
+    </select>
+    
+	<!-- 根据subentry查询 -->
+    <select id="findBySub" resultClass="java.lang.Long"
+		parameterClass="SysDict">
+		select
+			count(1)
+		FROM
+			SYSDICTIONARY
+		WHERE
+               DICT_ENTRY = #dict_entry#
+        AND
+               SUBENTRY = #subentry#
+	  </select>
+    
+    <!-- 查询SysDict总条数 -->
+	<select id="sysdictCount" resultClass="java.lang.Long"
+		parameterClass="SysDict">
+		select
+		count(*)
+		FROM
+		SYSDICTIONARY
+	</select>
+    
+	<!-- 根据dict_entry查询 -->
+    <select id="findById" parameterClass="SysDict" resultClass="SysDict">
+            SELECT
+              		  *
+            FROM
+                   SYSDICTIONARY
+            WHERE
+                   DICT_ENTRY = #dict_entry#
+    </select>
+	
+	<!--插入数据 -->
+	<insert id="insertSysDict" parameterClass="SysDict">
+       INSERT INTO SYSDICTIONARY(
+			DICT_ENTRY,
+			DICT_TYPE,
+			SUBENTRY,
+			ACCESS_LEVEL,
+			DICT_PROMPT,
+			DEFUNCT_IND,
+			REMARKS,
+			CREATED_BY,
+			CREATED_DATETIME
+        )VALUES(
+              #dict_entry:VARCHAR#,
+              #dict_type:VARCHAR#,
+              #subentry:VARCHAR#,
+              #access_level:VARCHAR#,
+              #dict_prompt:VARCHAR#,
+              #defunct_ind:VARCHAR#,
+              #remarks:VARCHAR#,
+              #created_by:NUMBER#,
+              #created_datetime:TIMESTAMP#
+          )
+     
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateSysDict" parameterClass="SysDict">
+		   	UPDATE SYSDICTIONARY 
+		   	SET
+			   	DICT_ENTRY = #dict_entry:VARCHAR#,
+			   	DICT_TYPE = #dict_type:VARCHAR#,
+			   	SUBENTRY = #subentry:VARCHAR#,
+			   	ACCESS_LEVEL = #access_level:VARCHAR#,
+			   	DICT_PROMPT = #dict_prompt:VARCHAR#,
+			   	DEFUNCT_IND = #defunct_ind:VARCHAR#,
+			   	REMARKS = #remarks:VARCHAR#
+		   	WHERE 
+		   		DICT_ENTRY = #old_dict_entry#
+		   	AND
+		   		SUBENTRY = #old_subentry#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteSysDict" parameterClass="SysDict">
+     	DELETE
+     	FROM SYSDICTIONARY
+     	WHERE
+                DICT_ENTRY = #dict_entry#
+        AND
+                SUBENTRY = #subentry#
+     </delete>
+     
+
+</sqlMap>    

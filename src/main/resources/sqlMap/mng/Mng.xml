@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="log">
+	<typeAlias alias="LogList" type="cn.com.liandisys.infa.entity.mng.LogList" />
+	<typeAlias alias="LogRelation" type="cn.com.liandisys.infa.entity.mng.LogRelation" />
+	<typeAlias alias="InfaSessLog" type="cn.com.liandisys.infa.entity.mng.InfaSessLog" />
+
+
+	<!--初始化日志列表 -->
+	<select id="findtaskloglisttotal" parameterClass="java.lang.String"
+		resultClass="LogList">
+		SELECT A.ID,
+		A.TASK_ID,
+		B.TASKNAME AS NAME,
+		A.RUN_STATUS_CODE,
+		TO_CHAR(A.START_TIME,'YYYY-MM-DD HH24:MI:SS') AS
+		START_TIME,
+		TO_CHAR(A.END_TIME,'YYYY-MM-DD HH24:MI:SS') AS END_TIME,
+		A.DETAIL,
+		TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') -
+		TO_DATE(TO_CHAR(A.START_TIME ,
+		'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD
+		HH24:MI:SS')) *
+		86400,'9999999999999999999999') AS RUN_COUNT
+		FROM INFA_TASKLOG
+		A,INFA_TASK B
+		WHERE A.TASK_ID=B.ID AND B.TYPE='0'
+		ORDER BY START_TIME
+		DESC
+	</select>
+
+	<!--查询日志列表 -->
+	<select id="findtaskloglisttotalbycondition" parameterClass="LogList"
+		resultClass="LogList">
+		select a.id,
+		a.task_id,
+		b.taskname as name,
+		a.run_status_code,
+		to_char(a.start_time,'yyyy-mm-dd hh24:mi:ss') as start_time,
+		to_char(a.end_time,'yyyy-mm-dd hh24:mi:ss') as end_time,
+		a.detail,
+		to_char((to_date(TO_CHAR(a.END_TIME , 'yyyy/mm/dd
+		hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') -
+		to_date(TO_CHAR(a.START_TIME ,
+		'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD
+		hh24:mi:ss')) *
+		86400,'9999999999999999999999') as run_count
+		from infa_tasklog
+		a,infa_task b
+		where a.task_id=b.id and b.type='0'
+		<isNotNull prepend="AND " property="name">
+		<![CDATA[	b.TASKNAME like
+			'%'||#name#||'%' ESCAPE '\' ]]>
+		</isNotNull>
+		<isNotNull prepend="AND " property="start">
+		<![CDATA[	a.START_TIME >=
+			to_date(#start#,'yyyy-mm-dd hh24:mi:ss') ]]>
+		</isNotNull>
+		<isNotNull prepend="AND " property="end">
+		<![CDATA[	(to_date(#end#,'yyyy-mm-dd hh24:mi:ss')+1)>=a.END_TIME ]]>
+		</isNotNull>
+		<isNotNull prepend="AND " property="run_status_code">
+		<![CDATA[	a.RUN_STATUS_CODE=#run_status_code# ]]>
+		</isNotNull>
+		order by start_time desc
+		
+	</select>
+
+	<!--查询runid列表 -->
+	<select id="findrunidbylogrelation" parameterClass="LogRelation"
+		resultClass="LogRelation">
+		select RUN_ID from infa_logrelation a
+		where 1=1
+		<isNotNull prepend="AND " property="task_logid">
+			a.TASK_LOGID=#task_logid#
+		</isNotNull>
+		<isNotNull prepend="AND " property="sub_tasklogid">
+			a.SUB_TASKLOGID=#sub_tasklogid#
+		</isNotNull>
+		<isNotNull prepend="AND " property="workflow_id">
+			a.WORKFLOW_ID=#workflow_id#
+		</isNotNull>
+	</select>
+	
+	
+		<!--查询runid -->
+	<select id="findrunid" parameterClass="java.util.HashMap"
+		resultClass="java.lang.String">
+		select RUN_ID from infa_logrelation a
+		where 1=1
+		<isNotNull prepend="AND " property="logid">
+			a.TASK_LOGID=#logid#
+		</isNotNull>
+		<isNotNull prepend="AND " property="sublogid">
+			a.SUB_TASKLOGID=#sublogid#
+		</isNotNull>
+		<isNotNull prepend="AND " property="workflowid">
+			a.WORKFLOW_ID=#workflowid#
+		</isNotNull>
+	</select>
+	
+
+	<!--初始化任务列表 -->
+	<select id="findtaskdetailbyid" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+		select 'OPEN' AS STATE,
+		b.id,
+		a.id as task_id,
+		a.type,
+		a.taskname as name,
+		b.run_status_code,
+		to_char(b.start_time,'yyyy-mm-dd hh24:mi:ss') as
+		start_time,
+		to_char(b.end_time,'yyyy-mm-dd hh24:mi:ss') as end_time ,
+		to_char((to_date(TO_CHAR(b.END_TIME , 'yyyy/mm/dd
+		hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') - to_date(TO_CHAR(b.START_TIME
+		,'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD hh24:mi:ss'))
+		*86400,'9999999999999999999999') as run_count,
+		null as WORKFLOWID,
+		null
+		as SUBTASKID ,
+		b.detail
+		from infa_task a , infa_tasklog b
+		where
+		a.id=b.task_id and b.id=#idtask#
+	</select>
+
+
+	<!--初始化主任务列表 -->
+	<select id="findAllLog" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+	    SELECT 
+	        D.ID task_id,
+	        D.TASKNAME taskname,
+	        A.ID id,
+   	   		TO_CHAR(A.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+   	    	TO_CHAR(A.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time,
+   	    	TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+	    	HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(A.START_TIME
+		   ,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		   *86400,'9999999999999999999999') AS RUN_COUNT,
+			A.DETAIL AS detail
+	    	FROM INFA_TASKLOG A, 
+	          (SELECT B.TASK_ID  TASKID ,MAX(START_TIME) START_TIME 
+	          FROM INFA_TASKLOG B GROUP BY B.TASK_ID) C,
+	          INFA_TASK D          
+	    WHERE 
+		A.TASK_ID = C.TASKID
+		AND A.START_TIME = C.START_TIME 
+		AND A.TASK_ID = D.ID AND D.TYPE='0' 			
+	</select>
+	
+	<!--初始化主任务列表 -->
+	<select id="findAllLogById" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+	    SELECT 
+	        D.ID task_id,
+	        D.TASKNAME taskname,
+	        A.ID id,
+   	   		TO_CHAR(A.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+   	    	TO_CHAR(A.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time,
+   	    	
+			A.DETAIL AS detail
+	    	FROM INFA_TASKLOG A, 
+	          (SELECT B.TASK_ID  TASKID ,MAX(START_TIME) START_TIME 
+	          FROM INFA_TASKLOG B GROUP BY B.TASK_ID) C,
+	          INFA_TASK D          
+	    WHERE 
+		A.TASK_ID = C.TASKID
+		AND A.START_TIME = C.START_TIME 
+		AND A.TASK_ID = D.ID AND D.TYPE='0' 
+		AND A.ID = 	#id:VARCHAR#		
+	</select>
+	
+	<!--主任务下WorkflowLog数-->
+	<select id="findMainDetailLog" parameterClass="LogList"
+		resultClass="java.lang.Long">
+	 SELECT count(1)
+	 FROM INFA_LOGRELATION
+	 WHERE
+	 TASK_LOGID=#id:NUMBER#
+	</select>
+	
+	<!--主任务下子任务LOG数-->
+	<select id="findMainSubLog" parameterClass="LogList"
+		resultClass="java.lang.Long">
+	 SELECT count(1)
+	 FROM INFA_SUBTASKLOG
+	 WHERE
+	 TASK_ID_ID=#id:NUMBER#
+	</select>
+	
+	
+	<!--主任务下子任务Log列表 -->
+	<select id="findTaskDetailLog" parameterClass="LogList"
+		resultClass="java.util.HashMap">
+	 SELECT A.id,
+	 B.TASKNAME taskname,
+	 A.TASK_ID SUBTASKID,
+	 A.RUN_STATUS_CODE,
+	 TO_CHAR(A.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	 TO_CHAR(A.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time,
+	 TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(A.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	 A.DETAIL 
+	 FROM INFA_SUBTASKLOG A,INFA_TASK B
+	 WHERE A.TASK_ID = B.ID and A.TASK_ID_ID =#id:NUMBER#
+	</select>
+	
+	
+	<!--主任务下WORKFLOW列表 -->
+	<select id="findMainTaskWorkflowLog" parameterClass="LogList"
+		resultClass="java.util.HashMap">
+	 SELECT B.ID id,
+	 C.ALIAS TASKNAME, 
+	 A.WORKFLOW_ID WORKFLOWID,
+	 B.RUN_STATUS_CODE,
+	 TO_CHAR(B.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	 TO_CHAR(B.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time, 
+	 	 TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(A.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	 B.LOG_DETAIL 
+	 FROM INFA_LOGRELATION A,INFA_WFLOW_RUN B,INFA_WORKFLOW C 
+	 WHERE A.RUN_ID = B.WORKFLOW_RUN_ID 
+	 AND A.WORKFLOW_ID = C.ID 
+	 AND SUB_TASKLOGID = 0
+	 AND TASK_LOGID=#id:NUMBER#
+	</select>
+	
+	<!--子任务下WORKFLOW列表 -->
+	<select id="findTaskWorkflowLog" parameterClass="LogList"
+		resultClass="java.util.HashMap">
+		<![CDATA[
+	 SELECT A.ID id,
+	 A.WORKFLOW_ID WORKFLOWID,
+	 C.ALIAS TASKNAME, 
+	 B.RUN_STATUS_CODE,
+	 TO_CHAR(B.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	 TO_CHAR(B.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time, 
+	 TO_CHAR((TO_DATE(TO_CHAR(B.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(B.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	 B.LOG_DETAIL 
+	 FROM INFA_LOGRELATION A,INFA_WFLOW_RUN B,INFA_WORKFLOW C 
+	 WHERE A.RUN_ID = B.WORKFLOW_RUN_ID 
+	 AND A.WORKFLOW_ID = C.ID 
+	 AND (TASK_LOGID >0 OR  TASK_LOGID<0)
+	 AND SUB_TASKLOGID = #id:NUMBER# ]]>
+	</select>
+	
+	
+	<!--主任务log列表 -->
+	<select id="findMainTask" parameterClass="LogList"
+		resultClass="java.util.HashMap">
+	     SELECT ID TASK_ID,
+	     TASKNAME
+         FROM INFA_TASK
+         WHERE TYPE='0'
+         ORDER BY ID DESC
+	</select>
+	
+	<!--  主任务下子任务数 -->
+	<select id="countMainTask" parameterClass="java.util.HashMap"
+		resultClass="java.lang.Long">
+	     SELECT COUNT(1)
+         FROM INFA_TASK_DETAIL
+         WHERE TASK_ID=#taskid:NUMBER#
+	</select>
+	
+	<!--  主任务日志下子任务数 -->
+	<select id="countMainTaskLog" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+	     SELECT COUNT(1)
+         FROM INFA_LOGRELATION
+         WHERE TASK_LOGID=#idtask#
+	</select>
+	
+	<!--  主任务下任务和workflow -->
+	<select id="find_DetailList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	     SELECT 
+	     A.TASKNAME,
+	     B.SUBTASKID
+         FROM INFA_TASK_DETAIL B,
+         INFA_TASk A
+         WHERE A.ID = B.SUBTASKID
+         AND TASK_ID=#taskid:NUMBER#
+	</select>
+	
+	<!--  主任务下子任务的LOG-->
+	<select id="findDetailList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	    SELECT A.id,
+	    A.TASK_ID SUBTASKID,
+	    A.RUN_STATUS_CODE,
+	    TO_CHAR(A.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	    TO_CHAR(A.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time,
+	    TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(A.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	    A.DETAIL 
+	    FROM INFA_SUBTASKLOG A
+	    WHERE A.TASK_ID_ID =#logid:NUMBER#
+	    AND A.TASK_ID = #subtaskid:NUMBER#
+	    
+	</select>
+	
+	
+		<!--  主任务下workflow的LOG-->
+	<select id="findWorkLogList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	   	<![CDATA[
+	 SELECT B.ID id,
+	 A.WORKFLOW_ID WORKFLOWID,
+	 B.RUN_STATUS_CODE,
+	 TO_CHAR(B.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	 TO_CHAR(B.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time, 
+	  TO_CHAR((TO_DATE(TO_CHAR(B.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(B.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	 B.LOG_DETAIL 
+	 FROM INFA_LOGRELATION A,INFA_WFLOW_RUN B
+	 WHERE A.RUN_ID = B.WORKFLOW_RUN_ID 
+	 AND A.SUB_TASKLOGID = 0]]>
+	 AND A.WORKFLOW_ID= #workflowid:NUMBER# 
+	 AND A.TASK_LOGID = #logid:NUMBER#     
+	</select>
+	
+	
+	
+		<!--  子任务下workflow的LOG-->
+	<select id="findSubWorkflowLog" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	 SELECT B.ID id,
+	 A.WORKFLOW_ID WORKFLOWID,
+	 B.RUN_STATUS_CODE,
+	 TO_CHAR(B.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+	 TO_CHAR(B.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time, 
+	   TO_CHAR((TO_DATE(TO_CHAR(B.END_TIME , 'YYYY/MM/DD
+		HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(B.START_TIME
+		,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		*86400,'9999999999999999999999') AS RUN_COUNT,
+	 B.LOG_DETAIL 
+	 FROM INFA_LOGRELATION A,INFA_WFLOW_RUN B
+	 WHERE A.RUN_ID = B.WORKFLOW_RUN_ID 
+	 AND A.WORKFLOW_ID= #workflowid:NUMBER# 
+	 AND A.TASK_LOGID = #logid:NUMBER#   
+	 AND A.SUB_TASKLOGID = #sublogid:NUMBER#  
+	 </select>  
+	
+	
+	<!--  主任务workflow -->
+	<select id="findWorkflowList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	     SELECT       
+	     B.ALIAS TASKNAME, 
+	     A.WORKFLOWID 
+		 FROM INFA_TASK_DETAIL A, 
+		      INFA_WORKFLOW B 
+		 WHERE  B.ID = A.WORKFLOWID 
+         AND TASK_ID=#taskid:NUMBER#
+	</select>
+	
+	<!--  子主任务workflow -->
+	<select id="findSubWorkflowList" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	     SELECT       
+	     B.ALIAS TASKNAME, 
+	     A.WORKFLOWID 
+		 FROM INFA_TASK_DETAIL A, 
+		      INFA_WORKFLOW B 
+		 WHERE  B.ID = A.WORKFLOWID 
+		 AND A.SUBTASKID IS NULL
+         AND TASK_ID=#taskid:NUMBER#
+         
+	</select>
+	
+	
+	<!--  查询某一主任务是否有日志 -->
+	<select id="findMainTaskLog" parameterClass="java.util.HashMap"
+		resultClass="java.util.HashMap">
+	  SELECT 
+	        D.ID task_id,
+	        D.TASKNAME taskname,
+	        A.ID id,
+	        A.RUN_STATUS_CODE RUN_STATUS_CODE,
+   	   		TO_CHAR(A.START_TIME,'yyyy/mm/dd hh24:mi:ss') as start_time,
+   	    	TO_CHAR(A.END_TIME,'yyyy/mm/dd hh24:mi:ss') as end_time,
+   	    	TO_CHAR((TO_DATE(TO_CHAR(A.END_TIME , 'YYYY/MM/DD
+		    HH24:MI:SS'),'YYYY/MM/DD HH24:MI:SS') - TO_DATE(TO_CHAR(A.START_TIME
+		    ,'YYYY/MM/DD HH24:MI:SS'), 'YYYY/MM/DD HH24:MI:SS'))
+		   *86400,'9999999999999999999999') AS RUN_COUNT,
+			A.DETAIL AS detail
+	    	FROM INFA_TASKLOG A, 
+	          (SELECT B.TASK_ID  TASKID ,MAX(START_TIME) START_TIME 
+	          FROM INFA_TASKLOG B GROUP BY B.TASK_ID) C,
+	          INFA_TASK D          
+	    WHERE 
+		A.TASK_ID = C.TASKID
+		AND A.START_TIME = C.START_TIME 
+		AND A.TASK_ID = D.ID AND D.TYPE='0' 
+        AND A.TASK_ID =#taskid:NUMBER#
+	</select>
+	
+	
+	
+	
+
+	<!-- 根据任务ID查询子任务 -->
+	<select id="findTaskClildSubTask" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+		select
+		a.id,
+		a.name,
+		a.workflowid,
+		a.subtaskid,
+		b.run_status_code,
+		to_char(b.start_time,'yyyy-mm-dd hh24:mi:ss') as
+		start_time,
+		to_char(b.end_time,'yyyy-mm-dd hh24:mi:ss') as end_time ,
+		to_char((to_date(TO_CHAR(b.END_TIME , 'yyyy/mm/dd
+		hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') -
+		to_date(TO_CHAR(b.START_TIME ,
+		'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD
+		hh24:mi:ss')) *
+		86400,'9999999999999999999999') as run_count ,
+		b.detail from
+		(select
+		a.id,a.taskname as name ,b.workflowid,b.subtaskid from infa_task
+		a,infa_task_detail b
+		where b.task_id=#id# and( a.id=b.subtaskid and
+		b.subtaskid is not null )) a
+		left join (select * from infa_tasklog
+		where start_time in(select max(start_time) from infa_tasklog group by
+		task_id)) b
+		on a.id=b.task_id
+	</select>
+
+
+	<!-- 根据任务ID查询子任务 -->
+	<select id="findTaskClildSubTaskLog" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+		select
+			b.sub_tasklogid as id,
+			a.task_id,
+			a.id as SubTaskId,
+			c.taskname as name,
+			a.run_status_code,
+			to_char(a.start_time,'yyyy-mm-dd hh24:mi:ss') as start_time,
+			to_char(a.end_time,'yyyy-mm-dd hh24:mi:ss') as end_time ,
+			to_char((to_date(TO_CHAR(a.END_TIME ,
+			'yyyy/mm/dd
+			hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') -
+			to_date(TO_CHAR(a.START_TIME ,
+			'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD
+			hh24:mi:ss')) *
+			86400,'9999999999999999999999') as run_count,
+			a.detail
+		from
+			infa_subtasklog a,(
+				select 
+				distinct
+				a.sub_tasklogid
+				from 
+				infa_logrelation a ,infa_tasklog b
+				where
+				a.task_logid = b.id
+				and
+				a.task_logid = #idtask#)b,infa_task c
+		where
+			a.id = b.sub_tasklogid
+		and
+			a.task_id = c.id
+	</select>
+
+
+	<!-- 根据任务ID查询workflow -->
+	<select id="findTaskClildWorkFlow" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+		select
+			a.id,
+			a.task_logid,
+			c.id as workflow,
+			b.workflow_name as name,
+			b.id as WorkFlowID,
+			a.sub_tasklogid,
+			b.workflow_id,
+			b.workflow_run_id,
+			b.run_status_code,
+			TO_CHAR(b.start_time ,
+			'yyyy-mm-dd hh24:mi:ss') as start_time,
+			TO_CHAR(b.end_time ,
+			'yyyy-mm-dd hh24:mi:ss') as end_time,
+			to_char((to_date(TO_CHAR(b.END_TIME ,
+			'yyyy/mm/dd
+			hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') -
+			to_date(TO_CHAR(b.START_TIME ,
+			'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD
+			hh24:mi:ss')) *
+			86400,'9999999999999999999999') as run_count,
+			b.log_detail as detail
+		from
+			infa_logrelation a , infa_wflow_run b,infa_workflow c
+		where
+			a.run_id = b.workflow_run_id
+		and
+			b.workflow_name = c.workflow_name
+		and 
+			a.task_logid = #idtask#
+		and 
+			a.sub_tasklogid = '0'
+	</select>
+
+	<!-- 根据任务ID查询workflow -->
+	<select id="findSubTaskClildWorkFlow" parameterClass="java.lang.String"
+		resultClass="java.util.HashMap">
+		select
+			b.id,
+			b.workflow_name as name,
+			c.id as workflow,
+			b.id as WorkFlowID,
+			b.workflow_id,
+		    b.workflow_run_id,
+			b.run_status_code,
+			TO_CHAR(b.start_time ,
+			'yyyy-mm-dd hh24:mi:ss') as start_time,
+			TO_CHAR(b.end_time ,
+			'yyyy-mm-dd hh24:mi:ss') as end_time,
+			to_char((to_date(TO_CHAR(b.END_TIME ,
+			'yyyy/mm/dd
+			hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') -
+			to_date(TO_CHAR(b.START_TIME ,
+			'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD
+			hh24:mi:ss')) *
+			86400,'9999999999999999999999') as run_count,
+			b.log_detail as detail
+		from
+			infa_logrelation a , infa_wflow_run b,infa_workflow c
+		where
+			a.run_id = b.workflow_run_id
+		and
+			b.workflow_name = c.workflow_name
+		and 
+			a.sub_tasklogid = #NewID#
+	</select>
+	
+	<!-- 根据任务ID查询session -->
+	<select id="findWorkFlowClildSession" parameterClass="InfaSessLog"
+		resultClass="java.util.HashMap">
+		select 
+			a.id,
+			a.session_name as name,
+			a.id as session_id,
+			a.run_status_code,
+			TO_CHAR(a.ACTUAL_START,
+			'yyyy-mm-dd hh24:mi:ss') as start_time,
+			TO_CHAR(a.SESSION_TIMESTAMP,
+			'yyyy-mm-dd hh24:mi:ss') as end_time,
+			to_char((to_date(TO_CHAR(a.SESSION_TIMESTAMP , 'yyyy/mm/dd
+			hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') - to_date(TO_CHAR(a.ACTUAL_START ,
+			'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD hh24:mi:ss')) *
+			86400,'9999999999999999999999') as run_count ,
+			a.log_detail as detail
+		from 
+			infa_sess_log a,infa_wflow_run b
+		where
+			a.workflow_id = #workflowId#
+		and
+			a.workflow_run_id = #workflowRunId#
+		and
+			a.workflow_name = b.workflow_name
+		and
+			a.workflow_run_id = b.workflow_run_id
+	</select>
+
+	<!-- 根据任务ID查询 -->
+	<select id="findDetailedLogListByid" parameterClass="java.lang.String"
+		resultClass="LogList">
+		SELECT
+		to_char(start_time,'yyyy-mm-dd hh24:mi:ss') as
+		start_time,
+		to_char(end_time,'yyyy-mm-dd hh24:mi:ss') as end_time ,
+		to_char((to_date(TO_CHAR(end_time , 'yyyy/mm/dd
+		hh24:mi:ss'),'yyyy/mm/dd hh24:mi:ss') - to_date(TO_CHAR(start_time ,
+		'yyyy/mm/dd hh24:mi:ss'), 'YYYY/mm/DD hh24:mi:ss')) *
+		86400,'9999999999999999999999') as run_count ,
+		RUN_STATUS_CODE,detail
+		FROM
+		INFA_TASKLOG
+		WHERE
+		TASK_ID = #id# order by start_time desc
+	</select>
+
+	<!-- 根据任务ID查询 -->
+	<select id="findDetailedLogListByidcount" parameterClass="java.lang.String"
+		resultClass="java.lang.Long">
+		SELECT count(*)
+		FROM
+		INFA_TASKLOG
+		WHERE
+		TASK_ID = #id# order
+		by start_time desc
+	</select>
+
+
+
+	<!-- 根据任务ID查询 -->
+	<select id="findWorkFlow" parameterClass="java.lang.String"
+		resultClass="WorkFlow">
+		SELECT
+		ID,
+		RUN_STATUS_CODE,
+		START_TIME,
+		END_TIME,
+		RUN_COUNT,
+		SUBJECT_AREA,
+		WORKFLOW_NAME
+		FROM
+		INFA_WORKFLOW
+		WHERE
+		ID = #id#
+	</select>
+
+
+	<!-- 查询用户列表(TODO:测试用) -->
+	<select id="getUsers" parameterClass="User" resultClass="User">
+		SELECT
+		A.EMAIL,
+		A.LOGIN_NAME,
+		A.NAME,
+		A.PASSWORD
+		FROM
+		ACCT_USER A
+	</select>
+
+	<!-- 根据条件查询Group信息 -->
+	<select id="selectGroupsByCond" parameterClass="Group"
+		resultClass="Group">
+		SELECT
+		A.ID,
+		A.NAME
+		FROM
+		ACCT_GROUP A
+		<!-- <dynamic prepend=" where "> -->
+		<!-- <isNotNull property="id" prepend="AND "> -->
+		<!-- A.ID = #value# -->
+		<!-- </isNotNull> -->
+		<!-- <isNotEmputy property="name" prepend="AND "> -->
+		<!-- A.NAME like '%'||#value#||'%' ESCAPE '\' -->
+		<!-- </isNotEmputy> -->
+		<!-- </dynamic> -->
+	</select>
+
+	<!-- Group表添加信息 -->
+	<insert id="insertGroup" parameterClass="Group">
+	</insert>
+
+	<!-- 添加LOG关系表 -->
+	<insert id="insertRelation" parameterClass="LogRelation">
+		INSERT INTO
+		INFA_LOGRELATION (TASK_LOGID ,SUB_TASKLOGID , WORKFLOW_ID ,RUN_ID)
+		VALUES (#task_logid#,#sub_tasklogid#,#workflow_id#,#run_id#)
+	</insert>
+
+	<!-- 添加LOG -->
+	<insert id="insertLog" parameterClass="LogList">
+		INSERT INTO INFA_TASKLOG
+		(ID,TASK_ID,START_TIME ,RUN_STATUS_CODE) VALUES (#id:NUMBER#,#task_id:NUMBER#,
+		#start_time:TIMESTAMP# , 6)
+	</insert>
+
+	<!-- 添加子任务LOG -->
+	<insert id="insertSubLog" parameterClass="LogList">
+		INSERT INTO
+		INFA_SUBTASKLOG (ID,TASK_ID,START_TIME,TASK_ID_ID,RUN_STATUS_CODE) VALUES
+		(#id:NUMBER#,
+		#task_id:NUMBER#,#start_time:TIMESTAMP#,#task_id_id:NUMBER#,6)
+	</insert>
+	<!-- 添加workflowrun表 -->
+	<insert id="insert_wflow_run" parameterClass="java.util.HashMap">
+		INSERT INTO
+		INFA_WFLOW_RUN (WORKFLOW_ID , WORKFLOW_RUN_ID , TASK_RUN_ID) VALUES
+		(#WORKFLOW_ID:NUMBER#,
+		#WORKFLOW_RUN_ID:NUMBER# , 0)
+	</insert>
+
+	<!--获取task的ID -->
+	<select id="getSequence" resultClass="java.math.BigDecimal">
+		SELECT
+		SEQ_INFA_TASK.nextval
+		from DUAL
+	</select>
+
+	<!-- 更新主任务LOG -->
+	<update id="updateLog" parameterClass="LogList">
+		UPDATE INFA_TASKLOG
+		SET
+		END_TIME = #end_time:TIMESTAMP# , DETAIL = #detail:VARCHAR# , RUN_STATUS_CODE = 3 WHERE
+		ID =
+		#id#
+	</update>
+	
+ 	<select id="SubCode" resultClass="java.lang.Long" parameterClass="java.lang.Long">
+		SELECT RUN_STATUS_CODE
+		from INFA_SUBTASKLOG where id = #SubTask_id#
+	</select> 
+
+	<!-- 更新子任务LOG -->
+	<update id="updateSubLog" parameterClass="LogList">
+		UPDATE INFA_SUBTASKLOG
+		SET END_TIME = #end_time:TIMESTAMP# , DETAIL = #detail:VARCHAR# ,RUN_STATUS_CODE = 3 WHERE ID = #id#
+	</update>
+</sqlMap>    

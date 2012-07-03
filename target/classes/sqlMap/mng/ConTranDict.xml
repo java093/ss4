@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="con">
+	<typeAlias alias="Con"
+		type="cn.com.liandisys.infa.entity.mng.ConTranDict" />
+	<sql id="findBySearch_segment">
+	<![CDATA[
+			SELECT 
+				a.sou_code,
+				a.sou_desc,
+				a.sou_dict_code,
+				a.sou_dict_desc,
+				a.sou_sub_dict_code,
+				a.sou_sub_dict_desc,
+				a.tran_dict_code,
+				a.tran_dict_desc,
+				a.tran_code,
+				a.tran_desc,
+				a.defunct_ind,
+				a.remarks,
+				a.created_by,
+				b.name as createdBy,
+				a.created_datetime
+			FROM 
+				CON_TRAN_DICT a  left join t_sys_user b
+			on
+				a.created_by = b.id  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ SOU_SUB_DICT_DESC like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY SOU_CODE ASC,SOU_DICT_CODE ASC,SOU_SUB_DICT_CODE ASC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Con">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="consearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		CON_TRAN_DICT
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             SOU_SUB_DICT_DESC like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+
+	<!--初始化任务列表 -->
+	<select id="findAllCon" parameterClass="java.lang.String"
+		resultClass="Con">
+		SELECT *
+		FROM CON_TRAN_DICT
+	</select>
+	
+	<!-- 根据ID查询 -->
+    <select id="findByid" parameterClass="Con" resultClass="Con">
+            SELECT
+              		  *
+            FROM
+                   CON_TRAN_DICT
+            WHERE
+                   SOU_CODE = #sou_code#
+            AND
+                   SOU_DICT_CODE = #sou_dict_code#
+            AND
+                   SOU_SUB_DICT_CODE = #sou_sub_dict_code#
+    </select>
+    
+    <!-- 根据code查询 -->
+    <select id="findByCode" resultClass="java.lang.Long"
+		parameterClass="Con">
+		select
+			count(1)
+		FROM
+			CON_TRAN_DICT
+		WHERE
+                   SOU_CODE = #sou_code#
+            AND
+                   SOU_DICT_CODE = #sou_dict_code#
+            AND
+                   SOU_SUB_DICT_CODE = #sou_sub_dict_code#
+	  </select>
+    
+    <!-- 查询ConTranDict总条数 -->
+	<select id="conCount" resultClass="java.lang.Long"
+		parameterClass="Con">
+		select
+		count(*)
+		FROM
+		CON_TRAN_DICT
+	</select>
+	
+	<!--插入数据 -->
+	<insert id="insertCon" parameterClass="Con">
+       INSERT INTO CON_TRAN_DICT(
+            SOU_CODE,
+            SOU_DESC,
+            SOU_DICT_CODE,
+            SOU_DICT_DESC,
+            SOU_SUB_DICT_CODE,
+            SOU_SUB_DICT_DESC,
+            TRAN_DICT_CODE,
+            TRAN_DICT_DESC,
+            TRAN_CODE,
+            TRAN_DESC,
+            DEFUNCT_IND,
+            REMARKS,
+            CREATED_BY,
+            CREATED_DATETIME
+        )VALUES(
+              #sou_code:VARCHAR#,
+              #sou_desc:VARCHAR#,
+              #sou_dict_code:NUMBER#,
+              #sou_dict_desc:VARCHAR#,
+              #sou_sub_dict_code:VARCHAR#,
+              #sou_sub_dict_desc:VARCHAR#,
+              #tran_dict_code:VARCHAR#,
+              #tran_dict_desc:VARCHAR#,
+              #tran_code:VARCHAR#,
+              #tran_desc:VARCHAR#,
+              #defunct_ind:VARCHAR#,
+              #remarks:VARCHAR#,
+              #created_by:NUMBER#,
+              #created_datetime:TIMESTAMP#
+          )
+     
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateCon" parameterClass="Con">
+		   	UPDATE CON_TRAN_DICT 
+		   	SET
+		   		TRAN_DICT_CODE = #tran_dict_code:VARCHAR#,
+	            TRAN_DICT_DESC = #tran_dict_desc:VARCHAR#,
+	            TRAN_CODE = #tran_code:VARCHAR#,
+	            TRAN_DESC = #tran_desc:VARCHAR#,
+	            DEFUNCT_IND = #defunct_ind:VARCHAR#,
+	            REMARKS = #remarks:VARCHAR#
+		   	WHERE 
+		   		SOU_CODE = #sou_code#
+		   	AND
+		   		SOU_DICT_CODE = #sou_dict_code#
+		   	AND
+		   		SOU_SUB_DICT_CODE = #sou_sub_dict_code#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteCon" parameterClass="Con">
+     	DELETE
+     	FROM 
+     		CON_TRAN_DICT
+     	WHERE 
+	   		SOU_CODE = #sou_code#
+	   	AND
+	   		SOU_DICT_CODE = #sou_dict_code#
+	   	AND
+	   		SOU_SUB_DICT_CODE = #sou_sub_dict_code#
+     </delete>
+
+
+</sqlMap>    

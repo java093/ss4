@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="TaskSyn">
+	<typeAlias alias="taskSyn"
+		type="cn.com.liandisys.infa.entity.syn.TaskSynDetail" />
+	<typeAlias alias="TaskLogTime"
+		type="cn.com.liandisys.infa.entity.index.TaskLogTime" />
+	<typeAlias alias="taskLogsyn"
+		type="cn.com.liandisys.infa.entity.syn.TaskLogSyn" />
+
+	<!-- 查询需要同步的workflow对应的Infa信息 -->
+	<select id="selectAllDetail" resultClass="taskSyn">
+		select
+		f.tasklog ,
+		f.task_id ,
+		f.task_runtype ,
+		f.taskmail_id,
+		f.subtasklog,
+		f.subtask_id ,
+		f.subend_time,
+		g.RUNTYPE as subtask_runtype,
+		g.mail_id as
+		subtaskmail_id,
+		f.run_id
+		from
+		(
+		select
+		d.tasklog ,
+		d.task_id ,
+		d.task_runtype ,
+		d.taskmail_id,
+		d.subtasklog,
+		e.TASK_ID as subtask_id ,
+		e.end_time as subend_time,
+		d.run_id
+		from(
+		select
+		z.tasklog ,
+		z.task_id ,
+		c.RUNTYPE as task_RUNTYPE ,
+		c.mail_id as taskmail_id,
+		z.subtasklog ,
+		z.RUN_ID
+		from(
+		select
+		a.id as tasklog,
+		a.TASK_ID ,
+		b.SUB_TASKLOGID as
+		subtasklog ,
+		b.RUN_ID
+		from
+		infa_tasklog a
+		Inner join
+		infa_logrelation b
+		on
+		a.id = b.TASK_LOGID
+		where
+		a.END_TIME is null
+		ORDER BY
+		a.id DESC
+		) z
+		left
+		join
+		infa_task c
+		on
+		c.id = z.TASK_ID
+		) d
+		left join
+		infa_subtasklog e
+		on
+		d.subtasklog = e.id
+		) f
+		left
+		join
+		infa_task g
+		on
+		f.subtask_id = g.id ORDER
+		BY
+		tasklog DESC , subtasklog DESC ,subend_time desc
+	</select>
+
+	<!-- 查询子任务下已经存在的所有workflowRun的信息,运行状态为6正在运行，不算入数量 -->
+	<select id="selectWorkflowRun" resultClass="TaskLogTime"
+		parameterClass="java.lang.Long">
+		select b.end_time , b.RUN_STATUS_CODE ,a.start_time
+		from (select c.* , d.start_time
+		from infa_logrelation c left join
+		infa_subtasklog d on c.sub_tasklogid = d.id where c.SUB_TASKLOGID =
+		#value#) a left join
+		infa_wflow_run b on a.task_logid = b.task_run_id
+		and a.run_id =
+		b.WORKFLOW_RUN_ID and b.run_status_code!=6 ORDER BY
+		b.end_time DESC , a.start_time DESC
+
+	</select>
+
+	<!-- 查询子任务下已经存在的所有workflowRun的信息,运行状态为6正在运行，不算入数量 -->
+	<select id="selectTask" resultClass="taskLogsyn" parameterClass="java.lang.Long">
+		select e.start_time , e.sub_tasklogid,e.end_time as
+		sub_end_time,e.run_status_code as
+		sub_code , f.end_time as wf_endtime ,
+		f.RUN_STATUS_CODE as wf_code from
+		(select c.* ,d.workflow_id as wfid
+		from (select a.* , b.end_time
+		,b.RUN_STATUS_CODE from (select z.* ,
+		x.start_time from
+		infa_logrelation z left join infa_tasklog x on
+		z.task_logid = x.id where z.task_logid = #tasklogid#)a left join
+		infa_subtasklog
+		b on a.sub_tasklogid =
+		b.id) c left join infa_workflow d
+		on
+		c.workflow_id = d.id)e left join
+		infa_wflow_run f on e.wfid =
+		f.workflow_id and e.run_id =
+		f.WORKFLOW_RUN_ID and e.task_logid =
+		f.task_run_id ORDER BY e.end_time
+		DESC
+	</select>
+</sqlMap>

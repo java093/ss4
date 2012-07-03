@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="task">  
+	<typeAlias alias="Task" type="cn.com.liandisys.infa.entity.job.Task"/>
+	<typeAlias alias="TaskDetail" type="cn.com.liandisys.infa.entity.job.TaskDetail"/>	
+	<typeAlias alias="TaskPlans" type="cn.com.liandisys.infa.entity.job.TaskPlans"/>	
+	<!--初始化任务列表 -->
+    
+     
+    <sql id="findALL_segment">
+	<![CDATA[
+	SELECT A.ID,A.TASKNAME,
+			CASE A.RUNTYPE 
+  				 WHEN '0' THEN '串行'
+  				 WHEN '1' THEN '并行'
+   	             ELSE ' ' END RUNTYPE,
+			A.TYPE,A.CREATETIME,A.UPDATETIME,B.NAME UPDATESERID
+			FROM INFA_TASK A LEFT JOIN T_SYS_USER B ON  A.UPDATESERID =B.ID 
+		    WHERE A.TYPE='1'
+		    ORDER BY A.ID DESC
+    ]]>
+	</sql> 
+	
+	<sql id="findALLMain_segment">
+	<![CDATA[
+		SELECT A.ID,A.TASKNAME,
+			CASE A.RUNTYPE 
+  				 WHEN '0' THEN '串行'
+  				 WHEN '1' THEN '并行'
+   	             ELSE ' ' END RUNTYPE,
+			A.TYPE,A.CREATETIME,A.UPDATETIME,B.NAME UPDATESERID
+			FROM INFA_TASK A LEFT JOIN T_SYS_USER B ON  A.UPDATESERID =B.ID 
+		    WHERE A.TYPE='0'
+		    ORDER BY A.ID DESC
+    ]]>
+	</sql>
+     
+     <sql id="findBySearch_segment">
+	<![CDATA[
+			SELECT A.ID,A.TASKNAME,
+			CASE A.RUNTYPE 
+  				 WHEN '0' THEN '串行'
+  				 WHEN '1' THEN '并行'
+   	             ELSE ' ' END RUNTYPE,
+			A.TYPE,A.CREATETIME,A.UPDATETIME,B.NAME UPDATESERID
+			FROM INFA_TASK A LEFT JOIN T_SYS_USER B ON  A.UPDATESERID =B.ID 
+		    WHERE A.TYPE=#type:VARCHAR# ]]>
+		 <isNotNull prepend="AND " property="name">
+          <![CDATA[  A.TASKNAME like '%'||#name:VARCHAR#||'%' ESCAPE '\']]>
+		 </isNotNull>
+		 <isNotNull prepend="AND " property="runtype">
+          <![CDATA[   A.RUNTYPE = #runtype:VARCHAR#]]>
+		 </isNotNull>
+		 ORDER BY A.ID DESC
+	</sql> 
+    
+     
+    <select id="findAllTask" parameterClass="java.util.HashMap"
+		resultClass="TASK">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findALL_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>	
+     
+    <select id="findAllMainTask" parameterClass="java.util.HashMap"
+		resultClass="TASK">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findALLMain_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+     
+     
+    <select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="TASK">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL# ]]>
+	</select>	
+     
+     
+       <select id="findByTaskName" resultClass="java.lang.Long"
+		parameterClass="TASk">
+		select
+		count(1)
+		FROM
+		INFA_TASK
+		WHERE TASKNAME =#TASKNAME:VARCHAR#
+		AND TYPE =#TYPE:VARCHAR#
+	  </select>
+     
+
+    <select id="taskCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_TASK
+		WHERE TYPE='1'
+	</select>
+	
+    <select id="tasksearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_TASK
+		WHERE TYPE=#type:VARCHAR#
+		<isNotNull prepend="AND " property="name">
+            TASKNAME like '%'||#name#||'%' ESCAPE '\'
+		</isNotNull>
+		 <isNotNull prepend="AND " property="runtype">
+          <![CDATA[  RUNTYPE = #runtype:VARCHAR#]]>
+		 </isNotNull>
+	</select>
+	
+	 <select id="maintaskCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_TASK
+		WHERE TYPE='0'
+	 </select>
+	
+	   <select id="maintasksearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		INFA_TASK
+		WHERE TYPE='0'
+		<isNotNull prepend="AND " property="TASKNAME">
+            TASKNAME like '%'||#TASKNAME#||'%' ESCAPE '\'
+		</isNotNull>
+	</select> 
+	
+
+     
+     <!--插入TASK-->
+          <insert id="insertTask" parameterClass="Task">
+       INSERT INTO INFA_TASK(  
+           ID, 
+           TASKNAME,
+		   TYPE,
+		   RUNTYPE,
+           EXPLAIN,
+           CREATETIME,
+           UPDATETIME,
+           MAIL_ID,
+           COMPLETEFLAG,
+           UPDATESERID
+        )VALUES(
+            #id:NUMBER#,
+            #TASKNAME:VARCHAR#,
+            #TYPE:VARCHAR#,
+            #RUNTYPE:VARCHAR#,
+            #EXPLAIN:VARCHAR#,
+            #CREATETIME:TIMESTAMP#,
+            #UPDATETIME:TIMESTAMP#,
+            #MAIL_ID:VARCHAR#,
+            #COMPLETEFLAG:VARCHAR#,
+            #UPDATESERID:VARCHAR#
+          )    
+     </insert>
+     
+     	
+	<!-- 功能说明：修改项目成员 -->
+	<update id="updateTask" parameterClass="Task">
+        update 
+            INFA_TASK 
+        set
+            TASKNAME= #TASKNAME:VARCHAR#,
+		    TYPE=#TYPE:VARCHAR#,
+		    RUNTYPE=#RUNTYPE:VARCHAR#,
+            EXPLAIN=#EXPLAIN:VARCHAR#,
+            UPDATETIME=#UPDATETIME:TIMESTAMP#,
+            MAIL_ID=#MAIL_ID:VARCHAR#,
+            COMPLETEFLAG=#COMPLETEFLAG:VARCHAR#,
+            UPDATESERID= #UPDATESERID:VARCHAR#
+        where
+            ID = #id:NUMBER#
+	</update>
+     
+   <!--获取task的ID-->
+     <select id="getSequence" resultClass="java.math.BigDecimal">
+     	SELECT SEQ_INFA_TASK.nextval
+     	from DUAL
+     </select>
+ 
+    <!--插入任务下的子任务或者workflow-->
+	<insert id="insertStep" parameterClass="java.util.HashMap">
+         INSERT INTO 
+                INFA_TASK_DETAIL(
+                TASK_ID,
+                SUBTASKID,
+				WORKFLOWID,
+				ORDERS
+            )VALUES(
+                #taskid:DECIMAL#,
+                #subtaskid:VARCHAR#,
+				#workid:VARCHAR#,
+				#orders:DECIMAL#	
+            )    
+	</insert>
+ 
+     <!--插入任务下计划-->
+	<insert id="insertPlan" parameterClass="java.util.HashMap">
+         INSERT INTO 
+                INFA_TASKPLAN(
+                TASKID,
+				PLANID
+            )VALUES(
+                #taskid:DECIMAL#,
+				#planid:DECIMAL#
+            )    
+	</insert>
+ 
+ 	<!--根据ID找TASK -->
+     <select id="findById" parameterClass="Task" resultClass="Task">
+			SELECT A.ID,A.TASKNAME,A.TYPE,A.RUNTYPE,A.EXPLAIN,A.MAIL_ID,A.COMPLETEFLAG
+			FROM INFA_TASK A
+			where A.ID =#id#
+     </select>
+
+	<!--根据ID找TASKDetail -->
+     <select id="findStepsById" parameterClass="Task" resultClass="TaskDetail">
+			SELECT A.ID id,A.WORKFLOWID,A.SUBTASKID,A.ORDERS,C.TASKNAME,B.ALIAS,B.EXPLAIN WORKFLOWEXPLAIN,C.EXPLAIN TASKEXPLAIN
+            FROM INFA_TASK_DETAIL A
+            LEFT JOIN INFA_WORKFLOW B ON A.WORKFLOWID = B.ID  
+            LEFT JOIN INFA_TASK C ON A.SUBTASKID=C.ID
+		    WHERE A.TASK_ID =#id#
+			ORDER BY ORDERS ASC
+     </select>
+     
+     <!--根据ID找Plan -->
+     <select id="findPlansById" parameterClass="Task" resultClass="TaskPlans">
+			SELECT A.ID,A.PLANID,B.NAME,B.EXPLAIN,B.TYPE TYPEID,B.TIME,B.STARTEDTIME STARTTIME,
+			CASE TYPE 
+  				 WHEN '0' THEN '仅执行一次'
+  				 WHEN '1' THEN '每天'
+   				 WHEN '2' THEN '每月'
+   	             ELSE ' ' END TYPE
+			FROM INFA_TASKPLAN A LEFT JOIN INFA_PLAN B ON A.PLANID = B.ID
+			WHERE A.TASKID =#id#
+     </select>
+     
+     <!--  删除Task-->
+        <delete id="deleteTask" parameterClass="Task">
+                DELETE
+                FROM INFA_TASK
+                WHERE
+                     ID = #id#
+      </delete>
+      
+       <!--  删除TaskDetail-->
+        <delete id="deleteTaskDetail" parameterClass="Task">
+                DELETE
+                FROM  INFA_TASK_DETAIL
+                WHERE
+                     TASK_ID = #id#
+      </delete>
+      
+       <!--  删除TaskPLAN-->
+        <delete id="deleteTaskPlan" parameterClass="Task">
+                DELETE
+                FROM  INFA_TASKPLAN
+                WHERE
+                     TASKID = #id#
+      </delete>
+      
+       <!--  删除TaskDetailTask-->
+        <delete id="deleteTaskDetailTask" parameterClass="Task">
+                DELETE
+                FROM  INFA_TASK_DETAIL
+                WHERE
+                SUBTASKID = #id#
+      </delete>
+ 
+</sqlMap>    

@@ -1,0 +1,115 @@
+@charset "utf-8";
+/* CSS Document */
+
+body { 
+  padding: 0; 
+  margin: 0; 
+  background: #FFFFFF url(../images/login/images/bg1024.jpg) no-repeat center top;
+  width: 100%;
+  height: auto;
+  display: table;
+  overflow: hidden;
+}
+#content{
+	width: 800px;
+	height: auto;
+	margin: 0 auto;
+	padding-top: 135px;
+}
+#center{
+	background: url(images/login/images/earth1024.png) no-repeat; 
+	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, src="images/login/images/earth1024.png");
+	_background:none;
+	height: 456px;
+}
+#box{
+	width: 560px;
+	height: 305px;
+	padding-top: 115px;
+	margin-left: 250px;
+}
+#top{
+	height: 85px;
+}
+#logo{
+	float: left;
+}
+#font{
+	margin-top: 22px;
+	margin-left: 20px;
+	float: left;
+}
+#body{
+	width: 520px;
+	height: 295px;
+	margin-top: 20px;
+	margin-left: 64px;
+	border-left: #bae0f3 2px solid;
+}
+#input{
+	width: 395px;
+	height: 235px;
+	padding-top: 30px;
+	margin-left: 55px;
+}
+#input .login{
+	font-size: 14px;
+	font-weight: normal;
+	height: 80px;
+	padding-top:20px;
+	padding-left:20px;
+	line-height:40px;
+}
+#input .login span{
+	vertical-align: middle;
+	font-family: "宋体";
+}
+#input input{
+	width: 200px;
+	height: 25px;
+	border: #bae0f3 1px solid;
+}
+#input .button{
+
+}
+#input .button a{
+	background: url(images/login/images/button1.png) no-repeat;
+	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, src="images/login/images/button1.png");
+	_background:none;
+	width: 72px;
+	height: 30px;
+	float: left;
+	margin-top: 20px;
+	margin-left: 40px;
+	font-size: 14px;
+	font-family: "宋体";
+	height: 30px;
+	line-height: 30px;
+	text-align: center;	
+	color: #FFFFFF;
+	text-decoration: none;
+}
+#input .button a:hover,a:link,a:visited,a:active{
+	background: url(images/login/images/button2.png) no-repeat;
+	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, src="images/login/images/button2.png");
+	_background:none;
+	width: 72px;
+	height: 30px;
+	float: left;
+	margin-top: 20px;
+	margin-left: 40px;
+	font-size: 14px;	
+	font-family: "宋体";
+	height: 30px;
+	line-height: 30px;
+	text-align: center;	
+	color: #8b3600;
+	text-decoration: none;
+}
+.clearfix{
+	margin: 0;
+	padding: 0;
+	border: none;
+	height: 0;
+	display: inline;
+}

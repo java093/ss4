@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="account">  
+	<typeAlias alias="User" type="cn.com.liandisys.infa.entity.account.User"/>
+	<typeAlias alias="Group" type="cn.com.liandisys.infa.entity.account.Group"/>
+	
+	<!-- 根据用户名查询用户 -->
+     <select id="findUserByLoginName" parameterClass="java.lang.String" resultClass="User">
+			SELECT 
+				A.EMAIL,
+				A.LOGIN_NAME,
+				A.NAME,
+				A.PASSWORD
+			FROM 
+				ACCT_USER A 
+			WHERE 
+				A.NAME=#value:STRING#
+     </select>
+     
+     <!-- 查询用户列表(TODO:测试用) -->
+     <select id="getUsers" parameterClass="User" resultClass="User">
+			SELECT 
+				A.EMAIL,
+				A.LOGIN_NAME,
+				A.NAME,
+				A.PASSWORD
+			FROM 
+				ACCT_USER A
+     </select>
+     
+     <!-- 根据条件查询Group信息 -->
+     <select id="selectGroupsByCond" parameterClass="Group" resultClass="Group">
+			SELECT 
+				A.ID,
+				A.NAME
+			FROM 
+				ACCT_GROUP A
+<!-- 			<dynamic prepend=" where "> -->
+<!-- 		        	<isNotNull property="id" prepend="AND "> -->
+<!-- 			   			A.ID = #value# -->
+<!-- 					</isNotNull> -->
+<!-- 		        	<isNotEmputy property="name" prepend="AND "> -->
+<!-- 			   			A.NAME like '%'||#value#||'%' ESCAPE '\' -->
+<!-- 					</isNotEmputy> -->
+<!-- 			</dynamic> -->
+     </select>
+     
+     <!-- Group表添加信息 -->
+     <insert id="insertGroup" parameterClass="Group">
+     </insert>
+</sqlMap>    

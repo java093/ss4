@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="InfaSyn">
+	<typeAlias alias="infaSynBaseInfo" 
+		type="cn.com.liandisys.infa.entity.syn.InfaSynBaseInfo"/>
+	
+	<!-- 查询需要同步的workflow对应的Infa信息 -->
+	<select id="selectUnSynInfaInfo" resultClass="infaSynBaseInfo">
+		SELECT 
+		      Z.TASK_LOGID as tasklogid
+		      ,Z.SUB_TASKLOGID AS subTasklogid
+		      ,Z.INFA_ID as infaId
+		      ,Z.DB_ID as dbId
+		      ,Z.WORKFLOW_ID as workflowId
+		      ,Z.RUN_ID as runId
+		FROM (
+		      SELECT
+		        C.TASK_LOGID
+		        ,C.SUB_TASKLOGID
+		        ,E.WORKFLOW_ID
+		        ,C.RUN_ID
+		        ,E.INFA_ID
+		        ,A.ID as DB_ID
+		      FROM
+		        INFA_DATABASE A
+		        ,INFA_INFOMATIC B
+		        ,INFA_LOGRELATION C
+		        ,INFA_WORKFLOW E
+		      WHERE
+		        C.WORKFLOW_ID = E.ID
+		        AND E.INFA_ID = B.ID
+		        AND B.KNOWLEDGE_BASE = A.ID
+				AND C.RUN_ID != -1
+	        ) Z
+		WHERE NOT EXISTS (
+		      SELECT
+		          INFOMATIC_ID
+		          ,WORKFLOW_RUN_ID
+		      FROM INFA_WFLOW_RUN D 
+		      WHERE D.INFOMATIC_ID = Z.INFA_ID
+		              AND D.WORKFLOW_RUN_ID = Z.RUN_ID
+		)
+		ORDER BY INFA_ID, RUN_ID
+	</select>
+</sqlMap>

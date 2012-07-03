@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="acct">  
+	<typeAlias alias="acctUser" type="cn.com.liandisys.infa.entity.acct.User"/>
+	<typeAlias alias="tSysUser" type="cn.com.liandisys.infa.entity.acct.TSysUser"/>
+	<typeAlias alias="userFunc" type="cn.com.liandisys.infa.entity.acct.UserFunc"/>
+	<typeAlias alias="menuFunc" type="cn.com.liandisys.infa.account.MenuFunction"/>
+	<typeAlias alias="mFunction" type="cn.com.liandisys.infa.account.MFunction"/>
+	
+	
+	<typeAlias alias="SysDict"
+		type="cn.com.liandisys.infa.entity.mng.SysDictionary" />
+	
+	<!--初始化用户列表 -->
+	<select id="findAllAcctUser" parameterClass="java.lang.String"
+		resultClass="tSysUser">
+		SELECT *
+		FROM t_sys_user
+		
+	</select>
+	
+    <!-- 查询SysDict总条数 -->
+	<select id="acctUserCount" resultClass="java.lang.Long"
+		parameterClass="tSysUser">
+		select
+		count(*)
+		FROM
+		t_sys_user
+	</select>
+    
+	<!-- 根据  ID 查询 -->
+    <select id="findById" parameterClass="java.lang.String" resultClass="tSysUser">
+            SELECT
+              		  *
+            FROM
+                   T_SYS_USER
+            WHERE
+                   id = #id#
+    </select>
+    
+    <!-- 根据 登陆名查询-->
+    <select id="findByLoginName" parameterClass="java.lang.String" resultClass="java.lang.Long">
+            SELECT
+              		  count(*)
+            FROM
+                   T_SYS_USER
+            WHERE
+                   login_name = #login_name#
+    </select>
+    
+    
+    <!-- 根据  登录名  查询 -->
+    <select id="findByLogin_name" parameterClass="java.lang.String" resultClass="acctUser">
+            SELECT
+              		  *
+            FROM
+                   ACCT_USER
+            WHERE
+                   login_name = #login_name#
+    </select>
+	
+	<!--插入数据 -->
+	<insert id="insertAcctUser" parameterClass="acctUser">
+       INSERT INTO t_sys_user(
+       		id,
+			login_name,
+			name,
+			password
+        )VALUES(
+        		#id#,
+              #login_name:VARCHAR#,
+              #name:VARCHAR#,
+              #password:VARCHAR#
+          )
+     </insert>
+     
+     <!-- 清除用户功能菜单 -->
+     <insert id="deleteUserFunc" parameterClass="userFunc">
+     	DELETE FROM T_SYS_USER_FUNC
+     		WHERE USER_ID = #USER_ID#
+     </insert>
+     
+     <!-- 插入用户功能菜单 -->
+     <insert id="insertUserFunc" parameterClass="userFunc">
+       INSERT INTO T_SYS_USER_FUNC(
+			USER_ID,
+			FUNC_ID
+        )VALUES(
+              #USER_ID#,
+              #FUNC_ID#
+          )
+     </insert>
+     
+      <!-- 根据  ID 查询UserFunc-->
+    <select id="findByIdUserFunc" parameterClass="java.lang.Long" resultClass="userFunc">
+            SELECT
+              		  *
+            FROM
+                   t_sys_user_func
+            WHERE
+                   USER_ID = #USER_ID#
+    </select>
+     
+     <!--更新数据-->
+     <update id="updateActtUser" parameterClass="acctUser">
+		   	UPDATE T_SYS_USER 
+		   	SET
+			  	name=#name:VARCHAR#
+		   	WHERE 
+		   		id = #id#
+     </update>
+     
+     <update id="updateActtUserPwd" parameterClass="acctUser">
+		   	UPDATE T_SYS_USER 
+		   	SET
+			   	password = #password:VARCHAR#
+		   	WHERE 
+		   		id = #id#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteAcctUser" parameterClass="acctUser">
+     	DELETE FROM T_SYS_USER
+     	WHERE
+                id = #id#
+     </delete>
+     
+    <!--插入数据MenuFunc -->
+	<insert id="insertMenuFunc" parameterClass="menuFunc">
+       INSERT INTO T_SYS_FUNC(
+			name,
+			code,
+			FUNC_URL,
+			PARENT_ID
+		
+        )VALUES(
+              #name:VARCHAR#,
+              #code:VARCHAR#,
+              #FUNC_URL:VARCHAR#,
+              #PARENT_ID:NUMBER#
+          )
+     
+     </insert>
+     
+     <!-- 根据  ID 查询 MenuFunc-->
+    <select id="findById_MenuFunc" parameterClass="menuFunc" resultClass="menuFunc">
+            SELECT
+              		  *
+            FROM
+                   T_SYS_FUNC
+            WHERE
+                   PARENT_ID = #PARENT_ID#
+    </select>
+    
+    
+    <!-- 根据  ID 查询 MenuFunc-->
+    <select id="findAllMenuFunc" resultClass="mFunction">
+            SELECT NAME as name,CODE,PARENT_ID FROM T_SYS_FUNC
+    </select>
+</sqlMap>    

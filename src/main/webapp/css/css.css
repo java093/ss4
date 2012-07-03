@@ -1,0 +1,51 @@
+body{ background-color:#126996}
+*{ margin:0px; padding:0px; list-style:none;}
+.mainbox{
+	width:auto;
+	height:auto;}
+.topbox{
+	background-image:url(../images/topbg.jpg);
+	background-repeat:repeat-x;
+	width:100%;
+	height:245px;
+}
+.topbox img{
+	width:782px;
+	height:245px;
+		}
+.midllebox{
+	background-image:url(../images/middle_bg.jpg);
+	background-repeat:repeat-x;
+	width:100%;
+	height:310px;
+	}
+.middlebox_login{
+	background-image:url(../images/middle_login.jpg);
+	width:531px;
+	height:253px;
+     }
+.loginbox{
+	width:262px;
+	height:162px;
+	float:right;
+	margin-top:45px;
+	margin-right:15px;
+}
+.loginbox ul{
+	width:262px;
+	margin:0px;
+	padding:0px;
+	}
+.loginbox ul li{
+	width:262px;
+	float:left;
+		}
+
+	
+.bottombox{
+	background-image:url(../images/bottom.jpg);
+	background-repeat:repeat-x;
+	width:100%;
+	height:124px;}
+	
+	

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="td">
+	<typeAlias alias="TD"
+		type="cn.com.liandisys.infa.entity.taskDetail.TaskDetail" />
+
+	<!--初始化任务列表 -->
+	<select id="findAllTaskDetail" parameterClass="java.lang.String"
+		resultClass="TD">
+		select *
+		from INFA_TASK_DETAIL
+	</select>
+
+	<select id="TaskDetailCount" resultClass="java.lang.Long"
+		parameterClass="TD">
+		select
+		count(1)
+		FROM
+		INFA_TASK_DETAIL
+	</select>
+
+	<!--主任务下所有子任务和子任务下的workflow信息 -->
+	<select id="TaskCount" resultClass="java.lang.Long"
+		parameterClass="java.lang.Long">
+		select count(*) from (select
+		*
+		FROM
+		INFA_TASK_DETAIL
+		WHERE
+		task_id = #subID#) a left join
+		infa_task_detail b on a.subtaskid =
+		b.task_id
+	</select>
+
+
+	<!-- 根据任务TASK_ID查询 -->
+	<select id="findByid" parameterClass="TD" resultClass="TD">
+		SELECT
+		*
+		FROM
+		INFA_TASK_DETAIL
+		WHERE
+		TASK_ID = #task_ID#
+	</select>
+
+	<!--获取taskLOG的ID -->
+	<select id="gettaskLogID" resultClass="java.math.BigDecimal">
+		SELECT
+		SEQ_INFA_TASK_LOG.nextval
+		from DUAL
+	</select>
+	<!--获取subtaskLOG的ID -->
+	<select id="getSubTaskLogID" resultClass="java.math.BigDecimal">
+		SELECT
+		SEQ_INFA_SUBTASK_LOG.nextval
+		from DUAL
+	</select>
+
+</sqlMap>    

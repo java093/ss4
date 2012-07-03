@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="detail">
+	<typeAlias alias="Detail"
+		type="cn.com.liandisys.infa.entity.mng.CodeMasterDetail" />
+	<sql id="findBySearch_segment">
+		<![CDATA[
+			 SELECT *
+			 FROM CODEMASTER_DETAIL  ]]>		
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+        <![CDATA[ CODETYPE like '%'||#name:VARCHAR#||'%' ESCAPE '\' ]]>
+			</isNotNull>
+		</dynamic>
+		ORDER BY ID DESC
+	</sql>
+	
+	<select id="findByName" parameterClass="java.util.HashMap"
+		resultClass="Detail">
+	<![CDATA[ SELECT * FROM (SELECT ROWNUM AS ROWNUM_,ROW_.* FROM (]]>	
+    <include refid="findBySearch_segment"/> 
+    <![CDATA[ ) row_ )where rownum_ <=#backNum:DECIMAL# and rownum_ > #preNum:DECIMAL#]]>
+	</select>
+		
+    <select id="detailsearchCount" resultClass="java.lang.Long"
+		parameterClass="java.util.HashMap">
+		select
+		count(1)
+		FROM
+		CODEMASTER_DETAIL
+		<dynamic prepend=" where ">
+			<isNotNull prepend="AND " property="name">
+             CODETYPE like '%'||#name:VARCHAR#||'%' ESCAPE '\'
+			</isNotNull>
+		</dynamic>  
+	</select> 
+
+	<!--初始化任务列表 -->
+	<select id="findAllDetail" parameterClass="java.lang.String"
+		resultClass="Detail">
+		SELECT *
+		FROM CODEMASTER_DETAIL
+	</select>
+	
+	<!-- 根据ID查询 -->
+    <select id="findByid" parameterClass="Detail" resultClass="Detail">
+            SELECT
+              		  *
+            FROM
+                   CODEMASTER_DETAIL
+            WHERE
+                   ID = #id#
+    </select>
+    
+	<!-- 根据CodeType查询 -->
+    <select id="findByCodeType" parameterClass="Detail" resultClass="Detail">
+            SELECT
+              		  *
+            FROM
+                   CODEMASTER_DETAIL
+            WHERE
+                   CODETYPE = #codetype#
+    </select>
+    
+    <!-- 根据code查询 -->
+    <select id="findByCode" resultClass="java.lang.Long"
+		parameterClass="Detail">
+		select
+		count(1)
+		FROM
+		CODEMASTER_DETAIL
+		WHERE
+		CODETYPE = #codetype#
+		AND
+		CODE = #code#
+	  </select>
+    
+    <!-- 查询CodeMasterDetail总条数 -->
+	<select id="detailCount" resultClass="java.lang.Long"
+		parameterClass="Detail">
+		select
+		count(*)
+		FROM
+		CODEMASTER_DETAIL
+	</select>
+	
+	<!--插入数据 -->
+	<insert id="insertDetail" parameterClass="Detail">
+       INSERT INTO CODEMASTER_DETAIL(
+            CODETYPE,
+            CODE,
+            CODEVALUE,
+            DESCRIPTION,
+            DELFLAG
+        )VALUES(
+              #codetype:VARCHAR#,
+              #code:VARCHAR#,
+              #codevalue:VARCHAR#,
+              #description:VARCHAR#,
+              #delflag:VARCHAR#
+          )
+     </insert>
+     
+     <!--更新数据-->
+     <update id="updateDetail" parameterClass="Detail">
+		   	UPDATE CODEMASTER_DETAIL 
+		   	SET
+			   	CODETYPE = #codetype:VARCHAR#,
+			   	CODE = #code:VARCHAR#,
+			   	CODEVALUE = #codevalue:VARCHAR#,
+			   	DESCRIPTION = #description:VARCHAR#,
+			   	DELFLAG = #delflag:VARCHAR#
+		   	WHERE 
+		   		ID = #id#
+     </update>
+     
+     <!--删除数据-->
+     <delete id="deleteDetail" parameterClass="Detail">
+     	DELETE
+     	FROM CODEMASTER_DETAIL
+     	WHERE
+			ID = #id#
+     </delete>
+
+</sqlMap>    
